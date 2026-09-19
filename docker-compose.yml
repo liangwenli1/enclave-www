@@ -1,0 +1,9 @@
+# Host 3011 is free (3000 meridian, 3010 trend-top).
+services:
+  www:
+    build: .
+    image: enclave-www
+    container_name: enclave-www
+    restart: unless-stopped
+    ports:
+      - "3011:3011"
