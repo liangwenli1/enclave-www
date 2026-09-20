@@ -1,9 +1,37 @@
-# Host 3011 is free (3000 meridian, 3010 trend-top).
+# 官网 + 许可证服务。主机 3011 对外（3000 meridian、3010 trend-top 已占用）。
+# api 只在 compose 网络里，不映射到主机端口：外界只能经官网的 /api/* 访问。
 services:
   www:
-    build: .
-    image: enclave-www
+    image: caddy:2-alpine
     container_name: enclave-www
     restart: unless-stopped
+    depends_on:
+      - api
     ports:
-      - "3011:3011"
+      - "127.0.0.1:3011:3011"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./index.html:/site/index.html:ro
+      - ./pricing.html:/site/pricing.html:ro
+      - ./download.html:/site/download.html:ro
+      - ./docs.html:/site/docs.html:ro
+      - ./account.html:/site/account.html:ro
+      - ./legal.html:/site/legal.html:ro
+      - ./favicon.svg:/site/favicon.svg:ro
+      - ./css:/site/css:ro
+      - ./js:/site/js:ro
+
+  api:
+    # 先在 enclave 仓库里构建：docker build -t enclave-vendor:latest apps/vendor
+    image: enclave-vendor:latest
+    container_name: enclave-vendor
+    restart: unless-stopped
+    environment:
+      PORT: "3012"
+      ENCLAVE_DATA_DIR: /data
+      ENCLAVE_ADMIN_TOKEN: ${ENCLAVE_ADMIN_TOKEN:?请先在 .env 里设置 ENCLAVE_ADMIN_TOKEN}
+    volumes:
+      - vendor-data:/data
+
+volumes:
+  vendor-data:

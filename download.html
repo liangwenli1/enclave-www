@@ -3,44 +3,113 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>下载 — Enclave</title>
+  <title>下载与校验 — Enclave</title>
+  <meta name="description" content="Enclave 安装包与内核的 SHA256 公示。先核哈希，再安装。" />
+  <link rel="icon" href="favicon.svg" />
   <link rel="stylesheet" href="css/site.css" />
 </head>
 <body>
   <main class="www-main">
-    <p class="www-kicker">Download</p>
-    <h1>先核哈希，再安装。</h1>
-    <p class="www-lead">Windows 预览包已放出，自签名，不是 1.0。macOS 尚未签发。</p>
+    <section class="www-hero">
+      <p class="www-overline">Download</p>
+      <h1>先核哈希，再安装。</h1>
+      <p class="www-lead">
+        下面是安装包与内核的完整 SHA256 和字节数。下载后在本机算一遍再安装：
+        这是你不依赖我们、能自己完成的一次验证。
+      </p>
+    </section>
+
     <section class="www-section">
-      <h2>工作台安装包</h2>
-      <div class="www-table-wrap">
+      <div class="www-section-head">
+        <h2>工作台安装包</h2>
+        <p>版本 0.9.1</p>
+      </div>
+      <div class="www-table-wrap www-scroll">
         <table>
-          <thead><tr><th>平台</th><th>文件</th><th>状态</th></tr></thead>
+          <thead>
+            <tr><th>平台</th><th>文件</th><th>大小</th><th>状态</th></tr>
+          </thead>
           <tbody>
             <tr>
               <td>Windows x64</td>
-              <td class="www-mono"><a href="https://github.com/liangwenli1/enclave/releases/tag/v0.9.1-windows-preview">Enclave_0.9.1_x64_en-US.msi</a></td>
-              <td>预览 · 自签名</td>
+              <td class="www-mono">
+                <a href="https://github.com/liangwenli1/enclave/releases/download/v0.9.1-windows-preview/Enclave_0.9.1_x64_en-US.msi">Enclave_0.9.1_x64_en-US.msi</a>
+              </td>
+              <td class="www-mono">7,245,824 字节</td>
+              <td><span class="www-badge www-badge-warn">预览版</span></td>
             </tr>
-            <tr><td>macOS Apple Silicon</td><td class="www-mono">Enclave-0.1.0-arm64.dmg</td><td class="www-warn">未签发</td></tr>
+            <tr>
+              <td>macOS Apple Silicon</td>
+              <td class="www-mono">—</td>
+              <td class="www-mono">—</td>
+              <td><span class="www-badge www-badge-bad">尚未发布</span></td>
+            </tr>
           </tbody>
         </table>
       </div>
-      <p class="www-hint">Windows 预览包是自签名。其他机器仍会提示未知发布者。</p>
+
+      <div class="www-hash u-mt-4">
+        <p class="www-overline">Enclave_0.9.1_x64_en-US.msi · SHA256</p>
+        <code>6af96a9b4dca0f4aa026f6277974e6e37c10d8551c9fb94bda61f5028f270534</code>
+        <button class="www-copy" type="button" data-copy="6af96a9b4dca0f4aa026f6277974e6e37c10d8551c9fb94bda61f5028f270534">复制</button>
+      </div>
+
+      <div class="www-callout u-mt-4">
+        这个安装包还没有购买到的代码签名证书，Windows 安装时会提示「未知发布者」。
+        这正是你要核哈希的原因：哈希对得上，文件就是我们发布的那一个。
+      </div>
+
+      <div class="www-hash u-mt-4">
+        <p class="www-overline">在 Windows 上核对（PowerShell）</p>
+        <code>Get-FileHash .\Enclave_0.9.1_x64_en-US.msi -Algorithm SHA256</code>
+        <button class="www-copy" type="button" data-copy="Get-FileHash .\Enclave_0.9.1_x64_en-US.msi -Algorithm SHA256">复制</button>
+      </div>
     </section>
+
     <section class="www-section">
-      <h2>内核 148.0.7778.215</h2>
-      <div class="www-table-wrap">
+      <div class="www-section-head">
+        <h2>内核 148.0.7778.215</h2>
+        <p>安装包不含内核，首次使用时由工作台下载并校验</p>
+      </div>
+      <div class="www-table-wrap www-scroll">
         <table>
-          <thead><tr><th>平台</th><th>通道</th><th>SHA256</th><th>bytes</th></tr></thead>
+          <thead>
+            <tr><th>平台</th><th>状态</th><th>字节</th><th>SHA256</th></tr>
+          </thead>
           <tbody>
-            <tr><td>linux-x64</td><td>stable</td><td class="www-mono">70d239830332e5820aa34dfcb284161cac0429eee25da642830afe04bda717f4</td><td class="www-mono">141269020</td></tr>
-            <tr><td>win-x64</td><td>candidate</td><td class="www-mono">9ef3f471b7a6641b4224532522b29141ce3746e27d55788d88e2fd951f362579</td><td class="www-mono">189767686</td></tr>
-            <tr><td>mac-arm64</td><td>candidate</td><td class="www-mono">b72f091e2e1a7583eed389c4b8e3534ed355e568af8c8bbf8fc30a25e23ca679</td><td class="www-mono">140187500</td></tr>
+            <tr>
+              <td>linux-x64</td>
+              <td><span class="www-badge www-badge-ok">稳定</span></td>
+              <td class="www-mono">141,269,020</td>
+              <td class="www-mono">70d239830332e5820aa34dfcb284161cac0429eee25da642830afe04bda717f4</td>
+            </tr>
+            <tr>
+              <td>win-x64</td>
+              <td><span class="www-badge www-badge-warn">预览</span></td>
+              <td class="www-mono">189,767,686</td>
+              <td class="www-mono">9ef3f471b7a6641b4224532522b29141ce3746e27d55788d88e2fd951f362579</td>
+            </tr>
+            <tr>
+              <td>mac-arm64</td>
+              <td><span class="www-badge www-badge-warn">预览</span></td>
+              <td class="www-mono">140,187,500</td>
+              <td class="www-mono">b72f091e2e1a7583eed389c4b8e3534ed355e568af8c8bbf8fc30a25e23ca679</td>
+            </tr>
           </tbody>
         </table>
       </div>
-      <p class="www-hint">linux-x64 为 stable。win / mac 为 candidate。</p>
+      <p class="www-note">
+        工作台每次启动环境都会重新核对磁盘上那个真正要执行的内核文件，哈希不符直接拒启，原因码
+        <code class="www-mono">KERNEL_HASH_MISMATCH</code>。
+      </p>
+    </section>
+
+    <section class="www-cta">
+      <h2>装好之后，先登录。</h2>
+      <p>额度随账号同步。没有账号也能安装和使用免费档的 3 个环境，登录后按你的档位解锁上限。</p>
+      <div class="www-actions">
+        <a class="www-btn www-btn-primary" href="account.html">注册账号</a>
+      </div>
     </section>
   </main>
   <script src="js/site.js"></script>

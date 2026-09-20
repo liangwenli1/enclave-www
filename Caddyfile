@@ -1,0 +1,27 @@
+# 官网。前面挂 Cloudflare Tunnel，指到这台机的 127.0.0.1:3011。
+:3011 {
+	root * /site
+	encode zstd gzip
+
+	# 许可证服务与官网同源，浏览器侧没有跨域、cookie 直接可用。
+	handle /api/* {
+		reverse_proxy api:3012
+	}
+
+	handle {
+		header {
+			X-Content-Type-Options nosniff
+			Referrer-Policy strict-origin-when-cross-origin
+			X-Frame-Options DENY
+			# 站点没有内联脚本和内联样式，可以直接上严格 CSP。
+			Content-Security-Policy "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+			-Server
+		}
+		try_files {path} {path}.html
+		file_server
+	}
+
+	handle_errors {
+		respond "{err.status_code} {err.status_text}"
+	}
+}

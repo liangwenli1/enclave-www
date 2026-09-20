@@ -4,34 +4,87 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>套餐 — Enclave</title>
+  <meta name="description" content="安装包免费，按环境数与席位订阅。内核安全更新对所有档位开放。" />
+  <link rel="icon" href="favicon.svg" />
   <link rel="stylesheet" href="css/site.css" />
 </head>
 <body>
   <main class="www-main">
-    <p class="www-kicker">Pricing</p>
-    <h1>按环境数订阅。</h1>
-    <p class="www-lead">安装包不收费。内核安全更新不对已付费用户锁在更高档。厂商许可证未接时，此页只展示结构。</p>
-    <div class="www-grid www-grid-3">
-      <article class="www-card">
-        <p class="www-kicker">Solo Free</p>
-        <p class="www-price">免费</p>
-        <ul><li>3 个环境</li><li>1 席位 · 1 并发</li><li>API 关闭</li></ul>
-        <a class="www-btn www-btn-primary" href="account.html">注册 Solo Free</a>
-      </article>
-      <article class="www-card">
-        <p class="www-kicker">Solo</p>
-        <p class="www-price">订阅</p>
-        <ul><li>50 个环境</li><li>1 席位 · 3 并发</li><li>本机只读 API 发现</li></ul>
-        <a class="www-btn www-btn-primary" href="account.html">注册 Solo</a>
-      </article>
-      <article class="www-card">
-        <p class="www-kicker">Pro</p>
-        <p class="www-price">订阅</p>
-        <ul><li>200 个环境</li><li>1 席位 · 8 并发</li><li>完整本机 API · 窗口同步 · 2 设备</li></ul>
-        <a class="www-btn www-btn-primary" href="account.html">注册 Pro</a>
-      </article>
-    </div>
-    <p class="www-hint">Team：200 环境起、3 席位起。结构不变，数字可调。</p>
+    <section class="www-hero">
+      <p class="www-overline">Pricing</p>
+      <h1>按环境数订阅。</h1>
+      <p class="www-lead">
+        安装包不收费，功能靠账号额度解锁。内核的安全更新对所有档位开放，
+        不会把补过洞的内核锁在更高档里。
+      </p>
+    </section>
+
+    <section class="www-section">
+      <div class="www-grid www-grid-3">
+        <article class="www-tier">
+          <p class="www-overline">Solo Free</p>
+          <h3>免费档</h3>
+          <p class="www-price">￥0</p>
+          <ul>
+            <li>3 个环境</li>
+            <li>1 席位 · 1 个同时运行</li>
+            <li>本机接口关闭</li>
+            <li>环境导出 / 导入</li>
+          </ul>
+          <a class="www-btn www-btn-secondary" href="account.html">注册开通</a>
+        </article>
+
+        <article class="www-tier www-tier-featured">
+          <p class="www-overline">Solo</p>
+          <h3>Solo</h3>
+          <p class="www-price">报价 <small>/ 按席位</small></p>
+          <ul>
+            <li>50 个环境</li>
+            <li>1 席位 · 3 个同时运行</li>
+            <li>本机接口：只读发现</li>
+            <li>环境导出 / 导入</li>
+          </ul>
+          <a class="www-btn www-btn-primary" href="account.html#upgrade">申请开通</a>
+        </article>
+
+        <article class="www-tier">
+          <p class="www-overline">Pro</p>
+          <h3>Pro</h3>
+          <p class="www-price">报价 <small>/ 按席位</small></p>
+          <ul>
+            <li>200 个环境</li>
+            <li>1 席位 · 8 个同时运行</li>
+            <li>本机接口：完整</li>
+            <li>2 台设备 · 窗口同步</li>
+          </ul>
+          <a class="www-btn www-btn-secondary" href="account.html#upgrade">申请开通</a>
+        </article>
+      </div>
+      <p class="www-note">
+        付费档按席位与环境数报价：在账号页提交申请，我们一个工作日内回复具体价格和开通方式。
+        Team 从 200 环境、3 席位起，需要更多席位或私有部署也走同一个入口。
+      </p>
+    </section>
+
+    <section class="www-section">
+      <div class="www-section-head">
+        <h2>额度怎么生效</h2>
+      </div>
+      <div class="www-grid www-grid-3">
+        <article class="www-card">
+          <h3>登录即同步</h3>
+          <p>工作台登录后拉取你的档位、到期时间和设备绑定，写进本机。额度在本机强制执行，超限只给升级入口，不会静默放行。</p>
+        </article>
+        <article class="www-card">
+          <h3>断网还能用</h3>
+          <p>登录过的机器在离线状态下有 14 天宽限期，期间可以继续启动已有环境，但不能新建超过档位上限的环境。</p>
+        </article>
+        <article class="www-card">
+          <h3>不登录也能用</h3>
+          <p>不登录就是免费档：3 个环境、1 个同时运行。所有环境数据始终只在你本机，我们看不到。</p>
+        </article>
+      </div>
+    </section>
   </main>
   <script src="js/site.js"></script>
 </body>
