@@ -20,6 +20,8 @@ services:
     image: enclave-vendor:latest
     container_name: enclave-vendor
     restart: unless-stopped
+    # node 作为 1 号进程不会响应 SIGTERM，停容器要等满 10 秒再被强杀；交给 init 转发信号。
+    init: true
     environment:
       PORT: "3012"
       ENCLAVE_DATA_DIR: /data
