@@ -26,7 +26,7 @@
           <a href="#proxy">代理</a>
           <a href="#lab">实验室</a>
           <a href="#move">换电脑</a>
-          <a href="#api">本机接口</a>
+          <a href="#api">本机 API</a>
           <a href="#security">安全</a>
         </nav>
 
@@ -102,15 +102,30 @@
             在另一台电脑登录同一账号后导入即可。Cookie 和浏览记录不在导出范围内。
           </p>
 
-          <h3 id="api">本机接口</h3>
+          <h3 id="api">本机 API</h3>
           <p>
-            工作台和内核之间通过一个只监听 <code>127.0.0.1</code> 的本机接口通信。它要求令牌，
-            并且只接受工作台自身的来源，网页无法跨域调用它。令牌存在你的用户目录下，每次安装各不相同。
+            给你自己的脚本用的接口：列出环境、启动、停止，拿到调试端口后用 Puppeteer / Playwright 接管窗口。
+            默认关闭，在工作台「设置 → 本机 API」打开。免费档不含；Solo 是只读；Pro 和 Team 可以启动和停止。
           </p>
-          <p>
-            这个接口是工作台自己用的，没有对外开放给脚本。它不监听除回环以外的任何地址，
-            也不要把它反代到公网。
+          <p>它只监听 <code>127.0.0.1</code>，每个请求都要带设置页里那个令牌。网页调不了它：带 <code>Origin</code> 头的请求一律拒绝。</p>
+          <div class="www-hash u-mt-4">
+            <p class="www-overline">列出环境</p>
+            <code>curl -H "Authorization: Bearer &lt;令牌&gt;" http://127.0.0.1:17891/api/v1/environments</code>
+          </div>
+          <div class="www-hash u-mt-4">
+            <p class="www-overline">启动一个环境（Pro / Team）</p>
+            <code>curl -X POST -H "Authorization: Bearer &lt;令牌&gt;" http://127.0.0.1:17891/api/v1/environments/&lt;环境id&gt;/start</code>
+          </div>
+          <p class="u-mt-4">
+            启动成功会返回 <code>debugPort</code>，用 <code>http://127.0.0.1:&lt;debugPort&gt;</code> 连接即可。
+            失败时返回和工作台里一样的原因码。同时运行数的上限对 API 同样生效。
+            代理密码在锁着的保险箱里的环境不会出现在列表里，先在工作台解锁。
           </p>
+          <ul>
+            <li><code>GET /api/v1/environments</code>　<code>GET /api/v1/environments/&lt;id&gt;</code></li>
+            <li><code>POST /api/v1/environments/&lt;id&gt;/start</code>　<code>POST /api/v1/environments/&lt;id&gt;/stop</code></li>
+          </ul>
+          <p>令牌泄露了就在设置页点「重置令牌」，旧的立刻失效。不要把这个端口反代到公网。</p>
 
           <h3 id="security">安全</h3>
           <ul>
