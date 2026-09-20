@@ -1,3 +1,12 @@
+# TLS 在 Cloudflare 那一层终止，cloudflared 用明文 HTTP 连过来，并带上 X-Forwarded-Proto: https。
+# Caddy 默认不信上游的转发头、会把它改写成 http —— 那样许可证服务就判断不出用户其实走的是
+# HTTPS，会话 cookie 永远不带 Secure。这里只信内网地址来的转发头（cloudflared 在本机 / 容器网段）。
+{
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
 # 官网。前面挂 Cloudflare Tunnel，指到这台机的 127.0.0.1:3011。
 :3011 {
 	root * /site
