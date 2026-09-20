@@ -37,7 +37,7 @@ function renderAccount(state) {
   const rows = [
     ["当前档位", license.label],
     ["额度", `${license.envLimit} 个环境 · ${license.concurrent} 个同时运行`],
-    ["到期", fmtDate(license.expiresAt)],
+    ["到期", license.expiredPlan ? `${license.expiredPlan} 已于 ${fmtDate(license.expiredAt)} 到期` : fmtDate(license.expiresAt)],
     ["已绑设备", `${devices.length} / ${license.deviceLimit}`],
   ];
   for (const [k, v] of rows) {

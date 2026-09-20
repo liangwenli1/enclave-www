@@ -4,6 +4,9 @@
 {
 	servers {
 		trusted_proxies static private_ranges
+		# X-Forwarded-For 的第一跳是客户端自己能填的（Cloudflare 只在后面追加），拿它限流等于没限。
+		# Cf-Connecting-Ip 由 Cloudflare 写入、客户端改不了。
+		client_ip_headers Cf-Connecting-Ip
 	}
 }
 
@@ -14,7 +17,10 @@
 
 	# 许可证服务与官网同源，浏览器侧没有跨域、cookie 直接可用。
 	handle /api/* {
-		reverse_proxy api:3012
+		reverse_proxy api:3012 {
+			# 只把 Caddy 认定的那个客户端 IP 传给许可证服务，丢掉客户端自带的那串。
+			header_up X-Forwarded-For {client_ip}
+		}
 	}
 
 	handle {
