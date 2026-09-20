@@ -1,7 +1,10 @@
 # Enclave 官网
 
-静态站 + 许可证服务。官网本体没有构建步骤：改 HTML / CSS / JS 就是全部。
+静态站 + 许可证服务。官网本体没有构建步骤：改 `site/` 下的 HTML / CSS / JS 就是全部。
 视觉规范见 [DESIGN.md](DESIGN.md)，和工作台共用同一套 token。
+
+对外发布的文件**只有 `site/`**，整个目录挂进容器。`.env`、`Caddyfile`、
+这份 README 都在仓库根目录，不会被当成静态资源发出去。
 
 ## 组成
 
@@ -56,7 +59,7 @@ curl -H "x-admin-token: $ENCLAVE_ADMIN_TOKEN" http://127.0.0.1:3011/api/admin/re
 ## 本地预览（不带账号功能）
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 8000 --directory site
 ```
 
 账号页会显示"账号服务暂时不可用"，其余页面正常。

@@ -11,15 +11,9 @@ services:
       - "127.0.0.1:3011:3011"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./index.html:/site/index.html:ro
-      - ./pricing.html:/site/pricing.html:ro
-      - ./download.html:/site/download.html:ro
-      - ./docs.html:/site/docs.html:ro
-      - ./account.html:/site/account.html:ro
-      - ./legal.html:/site/legal.html:ro
-      - ./favicon.svg:/site/favicon.svg:ro
-      - ./css:/site/css:ro
-      - ./js:/site/js:ro
+      # 整个目录挂进去：单文件挂载在文件被改写时会留在旧 inode 上，看到的是旧内容。
+      # 站点文件都在 site/，所以 .env、Caddyfile、README 不会被当成静态资源发出去。
+      - ./site:/site:ro
 
   api:
     # 先在 enclave 仓库里构建：docker build -t enclave-vendor:latest apps/vendor
