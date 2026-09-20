@@ -718,7 +718,8 @@ tbody tr:hover td {
 }
 
 .www-field input,
-.www-field select {
+.www-field select,
+.www-field textarea {
   height: 40px;
   padding: 0 14px;
   border: 1px solid var(--hairline-strong);
@@ -729,8 +730,16 @@ tbody tr:hover td {
   width: 100%;
 }
 
+.www-field textarea {
+  height: auto;
+  padding: 10px 14px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
 .www-field input:focus-visible,
-.www-field select:focus-visible {
+.www-field select:focus-visible,
+.www-field textarea:focus-visible {
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 2px rgba(250, 255, 105, 0.4);

@@ -10,10 +10,25 @@
 	}
 }
 
+# 每个响应都要带的安全头。
+(security) {
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		# 站点没有内联脚本和内联样式，可以直接上严格 CSP。
+		Content-Security-Policy "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+		-Server
+	}
+}
+
 # 官网。前面挂 Cloudflare Tunnel，指到这台机的 127.0.0.1:3011。
 :3011 {
 	root * /site
 	encode zstd gzip
+
+	# 错误响应不走上面的站点指令，所以这组头在 handle_errors 里再引一次。
+	import security
 
 	# 许可证服务与官网同源，浏览器侧没有跨域、cookie 直接可用。
 	handle /api/* {
@@ -24,19 +39,17 @@
 	}
 
 	handle {
-		header {
-			X-Content-Type-Options nosniff
-			Referrer-Policy strict-origin-when-cross-origin
-			X-Frame-Options DENY
-			# 站点没有内联脚本和内联样式，可以直接上严格 CSP。
-			Content-Security-Policy "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
-			-Server
-		}
 		try_files {path} {path}.html
 		file_server
 	}
 
 	handle_errors {
+		import security
+		@notfound expression {err.status_code} == 404
+		handle @notfound {
+			rewrite * /404.html
+			file_server
+		}
 		respond "{err.status_code} {err.status_text}"
 	}
 }

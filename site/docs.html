@@ -84,9 +84,7 @@
             <li>WebRTC 默认不使用非代理 UDP，不暴露真实 IP。</li>
             <li>优先 IPv4，避免 IPv6 直连绕过只支持 IPv4 的代理。</li>
           </ul>
-          <div class="www-callout">
-            工作台自己探测出口 IP 走的是你的本机网络，不是环境的代理。要看环境真实出口，在环境里打开查 IP 的网站。
-          </div>
+          <p>要确认环境的真实出口，在环境窗口里打开查 IP 的网站。</p>
 
           <h3 id="lab">实验室</h3>
           <p>
@@ -117,7 +115,8 @@
             <code>curl -X POST -H "Authorization: Bearer &lt;令牌&gt;" http://127.0.0.1:17891/api/v1/environments/&lt;环境id&gt;/start</code>
           </div>
           <p class="u-mt-4">
-            启动成功会返回 <code>debugPort</code>，用 <code>http://127.0.0.1:&lt;debugPort&gt;</code> 连接即可。
+            启动成功会返回这个环境，和列表里的格式一样；用其中的 <code>debugPort</code> 连
+            <code>http://127.0.0.1:&lt;debugPort&gt;</code> 即可。
             失败时返回和工作台里一样的原因码。同时运行数的上限对 API 同样生效。
             代理密码在锁着的保险箱里的环境不会出现在列表里，先在工作台解锁。
           </p>

@@ -51,6 +51,8 @@ function renderAccount(state) {
   if (devices.length) {
     panel.append(el("p", "www-overline", "设备"));
     const wrap = el("div", "www-table-wrap www-scroll u-mb-6");
+    const unbindError = el("p", "www-error u-mb-6");
+    unbindError.hidden = true;
     const table = document.createElement("table");
     const body = document.createElement("tbody");
     for (const d of devices) {
@@ -65,9 +67,11 @@ function renderAccount(state) {
           await api(`/devices/${encodeURIComponent(d.id)}`, { method: "DELETE" });
           load();
         } catch (e) {
+          if (e.code === "UNAUTHENTICATED") return load();
           btn.disabled = false;
-          btn.textContent = "解绑失败";
-          console.error(e);
+          btn.textContent = "解绑";
+          unbindError.textContent = `没解绑成：${e.message}`;
+          unbindError.hidden = false;
         }
       };
       actions.append(btn);
@@ -76,7 +80,7 @@ function renderAccount(state) {
     }
     table.append(body);
     wrap.append(table);
-    panel.append(wrap);
+    panel.append(wrap, unbindError);
   } else {
     panel.append(
       el("p", "www-note u-mb-6", "还没有设备登录过。安装工作台后在里面登录同一个账号即可。"),
@@ -89,8 +93,12 @@ function renderAccount(state) {
   const out = el("button", "www-btn www-btn-secondary", "退出登录");
   out.type = "button";
   out.onclick = async () => {
-    await api("/auth/logout", { method: "POST" });
-    load();
+    try {
+      await api("/auth/logout", { method: "POST" });
+      load();
+    } catch (e) {
+      renderOffline(e.message);
+    }
   };
   actions.append(out);
   panel.append(actions);
@@ -100,6 +108,7 @@ function renderAccount(state) {
 
 function renderUpgrade(plan, pending) {
   const box = document.createElement("div");
+  box.id = "upgrade";
 
   if (pending) {
     box.append(
@@ -241,8 +250,12 @@ async function load() {
   try {
     if (!PLANS.length) PLANS = (await api("/plans")).plans;
     const state = await api("/auth/me");
-    if (state.user) renderAccount(state);
-    else renderAuth("in");
+    // 定价页的「申请开通」带着 #upgrade 过来：已登录就滚到申请表，没登录的先注册。
+    const wantsUpgrade = location.hash === "#upgrade";
+    if (state.user) {
+      renderAccount(state);
+      if (wantsUpgrade) document.getElementById("upgrade")?.scrollIntoView();
+    } else renderAuth(wantsUpgrade ? "up" : "in");
   } catch (e) {
     if (e.code === "UNAUTHENTICATED") renderAuth("in");
     else renderOffline(e.message);
