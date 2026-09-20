@@ -59,6 +59,12 @@
         这正是你要核哈希的原因：哈希对得上，文件就是我们发布的那一个。
       </div>
 
+      <div class="www-callout u-mt-4">
+        这个 0.9.1 预览包构建于 2026 年 9 月，早于最近一次安全更新（本机接口令牌校验、
+        可执行文件哈希核对、代理密码保险箱）。下一版构建完成后，这里的文件名、大小和
+        SHA256 都会更新。
+      </div>
+
       <div class="www-hash u-mt-4">
         <p class="www-overline">在 Windows 上核对（PowerShell）</p>
         <code>Get-FileHash .\Enclave_0.9.1_x64_en-US.msi -Algorithm SHA256</code>
