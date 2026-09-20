@@ -1,13 +1,11 @@
 /* 账号页：注册、登录、档位、设备、升级申请、联系表单。
    会话是同源 HttpOnly cookie，这里不碰任何令牌。 */
 
-const PLAN_LABEL = { free: "Solo Free", solo: "Solo", pro: "Pro", team: "Team" };
-const PLAN_LIMIT = {
-  free: "3 个环境 · 1 个同时运行",
-  solo: "50 个环境 · 3 个同时运行",
-  pro: "200 个环境 · 8 个同时运行",
-  team: "200 个环境起 · 3 席位起",
-};
+/* 档位只在许可证服务里定义。这里不抄数字：当前档位来自 /auth/me，可选档位来自 /plans。 */
+let PLANS = [];
+
+const describe = (p) => `${p.envLimit} 个环境 · ${p.concurrent} 个同时运行 · ${p.deviceLimit} 台设备`;
+const labelOf = (id) => PLANS.find((p) => p.plan === id)?.label ?? id;
 
 const panel = document.getElementById("panel");
 const titleEl = document.getElementById("title");
@@ -37,8 +35,8 @@ function renderAccount(state) {
   const kv = el("table", "www-kv");
   const tbody = document.createElement("tbody");
   const rows = [
-    ["当前档位", PLAN_LABEL[license.plan] || license.plan],
-    ["额度", PLAN_LIMIT[license.plan] || ""],
+    ["当前档位", license.label],
+    ["额度", `${license.envLimit} 个环境 · ${license.concurrent} 个同时运行`],
     ["到期", fmtDate(license.expiresAt)],
     ["已绑设备", `${devices.length} / ${license.deviceLimit}`],
   ];
@@ -109,7 +107,7 @@ function renderUpgrade(plan, pending) {
       el(
         "p",
         "www-ok",
-        `已收到你对 ${PLAN_LABEL[pending.plan] || pending.plan} 的申请（${fmtDate(pending.createdAt)}）。` +
+        `已收到你对 ${labelOf(pending.plan)} 的申请（${fmtDate(pending.createdAt)}）。` +
           "我们会在一个工作日内用这个邮箱联系你，告知价格和开通方式。",
       ),
     );
@@ -122,18 +120,21 @@ function renderUpgrade(plan, pending) {
   form.innerHTML = `
     <div class="www-field">
       <label for="plan">申请档位</label>
-      <select id="plan" name="plan">
-        <option value="solo">Solo · 50 个环境</option>
-        <option value="pro">Pro · 200 个环境</option>
-        <option value="team">Team · 200 环境 / 3 席位起</option>
-      </select>
+      <select id="plan" name="plan"></select>
     </div>
     <div class="www-field">
       <label for="note">补充说明（可选）</label>
-      <input id="note" name="note" type="text" maxlength="200" placeholder="席位数、使用场景、发票信息" />
+      <input id="note" name="note" type="text" maxlength="200" placeholder="设备数、使用场景、发票信息" />
     </div>
     <p class="www-error" hidden></p>
     <button class="www-btn www-btn-primary" type="submit">提交申请</button>`;
+
+  for (const p of PLANS.filter((x) => x.plan !== "free" && x.plan !== plan)) {
+    const opt = document.createElement("option");
+    opt.value = p.plan;
+    opt.textContent = `${p.label} · ${describe(p)}`;
+    form.plan.append(opt);
+  }
 
   const err = form.querySelector(".www-error");
   const btn = form.querySelector("button");
@@ -238,6 +239,7 @@ function renderOffline(message) {
 
 async function load() {
   try {
+    if (!PLANS.length) PLANS = (await api("/plans")).plans;
     const state = await api("/auth/me");
     if (state.user) renderAccount(state);
     else renderAuth("in");

@@ -324,15 +324,6 @@ h3 {
   background: var(--surface-elevated);
 }
 
-.www-btn-ghost {
-  background: transparent;
-  color: var(--body);
-}
-
-.www-btn-ghost:hover {
-  background: var(--surface-card);
-  color: var(--ink);
-}
 
 .www-btn[disabled] {
   background: var(--primary-disabled);
@@ -745,9 +736,6 @@ tbody tr:hover td {
   box-shadow: 0 0 0 2px rgba(250, 255, 105, 0.4);
 }
 
-.www-field-error input {
-  border-color: var(--error);
-}
 
 .www-error {
   margin: 0;
@@ -907,16 +895,12 @@ tbody tr:hover td {
 
 /* ── 小工具类（避免内联 style，配合严格 CSP） ─────────── */
 
-.u-mt-3 { margin-top: var(--s3); }
 .u-mt-4 { margin-top: var(--s4); }
-.u-mt-5 { margin-top: var(--s5); }
 .u-mb-0 { margin-bottom: 0; }
 .u-mb-5 { margin-bottom: var(--s5); }
 .u-mb-6 { margin-bottom: var(--s6); }
 .u-right { text-align: right; }
-.u-muted { color: var(--muted); }
 .u-accent { color: var(--primary); }
-.u-nowrap { white-space: nowrap; }
 
 .www-kv {
   margin: var(--s4) 0 var(--s6);
