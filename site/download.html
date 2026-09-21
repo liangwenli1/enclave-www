@@ -22,7 +22,7 @@
     <section class="www-section">
       <div class="www-section-head">
         <h2>工作台安装包</h2>
-        <p>版本 0.9.1</p>
+        <p>版本 0.9.2</p>
       </div>
       <div class="www-table-wrap www-scroll">
         <table>
@@ -32,43 +32,55 @@
           <tbody>
             <tr>
               <td>Windows x64</td>
-              <td class="www-mono">
-                <a href="https://github.com/liangwenli1/enclave/releases/download/v0.9.1-windows-preview/Enclave_0.9.1_x64_en-US.msi">Enclave_0.9.1_x64_en-US.msi</a>
-              </td>
-              <td class="www-mono">7,245,824 字节</td>
+              <td class="www-mono"><a href="https://github.com/liangwenli1/enclave/releases/download/v0.9.2/Enclave_0.9.2_x64_en-US.msi">Enclave_0.9.2_x64_en-US.msi</a></td>
+              <td class="www-mono">7,122,944 字节</td>
               <td><span class="www-badge www-badge-warn">预览版</span></td>
             </tr>
             <tr>
               <td>macOS Apple Silicon</td>
-              <td class="www-mono">—</td>
-              <td class="www-mono">—</td>
-              <td><span class="www-badge www-badge-bad">尚未发布</span></td>
+              <td class="www-mono"><a href="https://github.com/liangwenli1/enclave/releases/download/v0.9.2/Enclave_0.9.2_aarch64.dmg">Enclave_0.9.2_aarch64.dmg</a></td>
+              <td class="www-mono">7,207,876 字节</td>
+              <td><span class="www-badge www-badge-warn">预览版</span></td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <div class="www-hash u-mt-4">
-        <p class="www-overline">Enclave_0.9.1_x64_en-US.msi · SHA256</p>
-        <code>6af96a9b4dca0f4aa026f6277974e6e37c10d8551c9fb94bda61f5028f270534</code>
-        <button class="www-copy" type="button" data-copy="6af96a9b4dca0f4aa026f6277974e6e37c10d8551c9fb94bda61f5028f270534">复制</button>
+        <p class="www-overline">Enclave_0.9.2_x64_en-US.msi · SHA256</p>
+        <code>6a7a888aa7d301c8415a9f4ddb14c64f9d8fe891cd08a3d91de87c9d1163126c</code>
+        <button class="www-copy" type="button" data-copy="6a7a888aa7d301c8415a9f4ddb14c64f9d8fe891cd08a3d91de87c9d1163126c">复制</button>
+      </div>
+      <div class="www-hash u-mt-4">
+        <p class="www-overline">Enclave_0.9.2_aarch64.dmg · SHA256</p>
+        <code>7b00f8ba371bbfeb4aac7c57b0b5c4080b5dde7f200205f8a9a141dee776a050</code>
+        <button class="www-copy" type="button" data-copy="7b00f8ba371bbfeb4aac7c57b0b5c4080b5dde7f200205f8a9a141dee776a050">复制</button>
       </div>
 
       <div class="www-callout u-mt-4">
-        这个安装包还没有购买到的代码签名证书，Windows 安装时会提示「未知发布者」。
+        两个安装包都还没有买到的代码签名。Windows 安装时会提示「未知发布者」；
+        macOS 会说应用「已损坏」，装好后先在终端执行下面这行再打开。
         这正是你要核哈希的原因：哈希对得上，文件就是我们发布的那一个。
       </div>
 
       <div class="www-callout u-mt-4">
-        这个 0.9.1 预览包构建于 2026 年 9 月，早于最近一次安全更新（本机接口令牌校验、
-        可执行文件哈希核对、代理密码保险箱）。下一版构建完成后，这里的文件名、大小和
-        SHA256 都会更新。
+        0.9.2 还没有接入账号服务：工作台里不能登录，按免费档使用（3 个环境、同时运行 1 个）。
       </div>
 
       <div class="www-hash u-mt-4">
+        <p class="www-overline">macOS：装好后执行一次</p>
+        <code>xattr -cr /Applications/Enclave.app</code>
+        <button class="www-copy" type="button" data-copy="xattr -cr /Applications/Enclave.app">复制</button>
+      </div>
+      <div class="www-hash u-mt-4">
         <p class="www-overline">在 Windows 上核对（PowerShell）</p>
-        <code>Get-FileHash .\Enclave_0.9.1_x64_en-US.msi -Algorithm SHA256</code>
-        <button class="www-copy" type="button" data-copy="Get-FileHash .\Enclave_0.9.1_x64_en-US.msi -Algorithm SHA256">复制</button>
+        <code>Get-FileHash .\Enclave_0.9.2_x64_en-US.msi -Algorithm SHA256</code>
+        <button class="www-copy" type="button" data-copy="Get-FileHash .\Enclave_0.9.2_x64_en-US.msi -Algorithm SHA256">复制</button>
+      </div>
+      <div class="www-hash u-mt-4">
+        <p class="www-overline">在 macOS 上核对（终端）</p>
+        <code>shasum -a 256 Enclave_0.9.2_aarch64.dmg</code>
+        <button class="www-copy" type="button" data-copy="shasum -a 256 Enclave_0.9.2_aarch64.dmg">复制</button>
       </div>
     </section>
 
@@ -80,7 +92,7 @@
       <div class="www-table-wrap www-scroll">
         <table>
           <thead>
-            <tr><th>上游文件（Windows x64）</th><th>状态</th><th>字节</th><th>SHA256</th></tr>
+            <tr><th>上游文件</th><th>状态</th><th>字节</th><th>SHA256</th></tr>
           </thead>
           <tbody>
             <tr>
@@ -88,6 +100,12 @@
               <td><span class="www-badge www-badge-warn">预览</span></td>
               <td class="www-mono">189,767,686</td>
               <td class="www-mono">9ef3f471b7a6641b4224532522b29141ce3746e27d55788d88e2fd951f362579</td>
+            </tr>
+            <tr>
+              <td><a href="https://github.com/adryfish/fingerprint-chromium/releases/download/148.0.7778.215/ungoogled-chromium_148.0.7778.215-1.1_macos.dmg">ungoogled-chromium_148.0.7778.215-1.1_macos.dmg</a></td>
+              <td><span class="www-badge www-badge-warn">预览</span></td>
+              <td class="www-mono">140,187,500</td>
+              <td class="www-mono">b72f091e2e1a7583eed389c4b8e3534ed355e568af8c8bbf8fc30a25e23ca679</td>
             </tr>
           </tbody>
         </table>
