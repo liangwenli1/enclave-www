@@ -1,0 +1,721 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Enclave 官网。规范见 enclave 仓库的 DESIGN.md：纯黑、纯白、一种蓝；分隔靠线，不靠卡片。
+   亮色 / 暗色跟随系统。控件用 shadcn/ui，颜色全部走下面这组语义变量。 */
+
+@custom-variant dark (@media (prefers-color-scheme: dark));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-body: var(--body);
+  --color-link: var(--link);
+  --color-accent-wash: var(--accent-wash);
+  --color-warn: var(--warn);
+  --font-sans: var(--font-archivo), "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "Noto Sans SC",
+    system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  --font-heading: var(--font-sans);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  /* 方一点：控件 3px，容器 4px。 */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 3px;
+  --radius-xl: 4px;
+  --radius-2xl: 4px;
+  --radius-3xl: 4px;
+  --radius-4xl: 4px;
+}
+
+:root {
+  color-scheme: light dark;
+  --background: #ffffff;
+  --foreground: #000000;
+  --body: #3a3a3a;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  /* 蓝只有两个用处：要你点的那个按钮，和"选中 / 没问题"。 */
+  --primary: #0a3cff;
+  --primary-foreground: #ffffff;
+  --link: #0a3cff;
+  --accent-wash: #e8edff;
+  --secondary: #f4f4f4;
+  --secondary-foreground: #000000;
+  --muted: #f4f4f4;
+  --muted-foreground: #6e6e6e;
+  --accent: #f4f4f4;
+  --accent-foreground: #000000;
+  --destructive: #c40000;
+  --warn: #9a5200;
+  --border: #e4e4e4;
+  --input: #c4c4c4;
+  --ring: #0a3cff;
+  --radius: 3px;
+  --page: 1120px;
+  --gutter: clamp(16px, 4vw, 40px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #000000;
+    --foreground: #ffffff;
+    --body: #cfcfcf;
+    --card: #000000;
+    --card-foreground: #ffffff;
+    --popover: #000000;
+    --popover-foreground: #ffffff;
+    --primary: #1f4dff;
+    --link: #7d9bff;
+    --accent-wash: #0c1640;
+    --secondary: #121212;
+    --secondary-foreground: #ffffff;
+    --muted: #121212;
+    --muted-foreground: #8c8c8c;
+    --accent: #121212;
+    --accent-foreground: #ffffff;
+    --destructive: #ff6b6b;
+    --warn: #f0a53a;
+    --border: #262626;
+    --input: #3d3d3d;
+    --ring: #1f4dff;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-body;
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply text-foreground;
+    text-wrap: balance;
+  }
+  a {
+    color: var(--link);
+    text-underline-offset: 3px;
+  }
+}
+
+/* 版式与内容：从原来的静态站原样搬过来的那部分。按钮和表单不在这里，它们是 shadcn/ui 组件。 */
+@layer components {
+  /* ── 头尾 ─────────────────────────────────────────────── */
+
+  .www-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .www-bar {
+    max-width: var(--page);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 12px 28px;
+    flex-wrap: wrap;
+  }
+
+  .www-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--foreground);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    text-decoration: none;
+  }
+
+  .www-mark {
+    display: block;
+    color: var(--foreground);
+  }
+
+  .www-mark .cut {
+    stroke: var(--background);
+  }
+
+  .www-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-left: auto;
+  }
+
+  .www-nav a {
+    padding: 6px 12px;
+    border-radius: 3px;
+    color: var(--body);
+    font-size: 15px;
+    text-decoration: none;
+  }
+
+  .www-nav a:hover {
+    background: var(--muted);
+    color: var(--foreground);
+  }
+
+  .www-nav a[data-active="true"] {
+    background: var(--foreground);
+    color: var(--background);
+    font-weight: 600;
+  }
+
+  .www-footer {
+    margin-top: 96px;
+    border-top: 2px solid var(--foreground);
+  }
+
+  .www-foot {
+    max-width: var(--page);
+    margin: 0 auto;
+    padding: 24px var(--gutter) 40px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px 32px;
+    font-size: 14px;
+    color: var(--muted-foreground);
+  }
+
+  .www-foot nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+
+  .www-foot a {
+    color: var(--body);
+  }
+
+  /* ── 版式 ─────────────────────────────────────────────── */
+
+  .www-main {
+    max-width: var(--page);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+  }
+
+  .www-hero {
+    padding: clamp(40px, 7vw, 88px) 0 clamp(28px, 4vw, 48px);
+    display: grid;
+    gap: 24px;
+  }
+
+  .www-hero h1 {
+    font-size: clamp(36px, 6.4vw, 78px);
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    max-width: 16ch;
+  }
+
+  /* 内页的标题小一号：它们是目录，不是海报。 */
+  .www-hero-page h1 {
+    font-size: clamp(30px, 4.4vw, 48px);
+    max-width: 22ch;
+  }
+
+  .www-lead {
+    font-size: clamp(16px, 1.6vw, 19px);
+    max-width: 36em;
+  }
+
+  .www-note {
+    font-size: 14px;
+    color: var(--muted-foreground);
+    max-width: 60em;
+  }
+
+  .www-section {
+    padding: clamp(36px, 5vw, 64px) 0 0;
+  }
+
+  .www-section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 24px;
+    padding-bottom: 14px;
+    margin-bottom: 8px;
+    border-bottom: 2px solid var(--foreground);
+  }
+
+  .www-section-head h2 {
+    font-size: clamp(22px, 2.6vw, 30px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .www-section-head p {
+    font-size: 14px;
+    color: var(--muted-foreground);
+  }
+
+  /* 小标签：只在它确实在给下面的内容起名时用（哈希块、命令块）。普通大小写，不拉字距。 */
+  .www-overline {
+    font-size: 13px;
+    color: var(--muted-foreground);
+  }
+
+  /* ── 分栏内容：用线分，不用卡片 ───────────────────────── */
+
+  .www-grid {
+    display: grid;
+    gap: 0 40px;
+  }
+
+  @media (min-width: 860px) {
+    .www-grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .www-grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .www-card {
+    padding: 22px 0 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .www-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .www-card p {
+    font-size: 15px;
+    max-width: 44em;
+  }
+
+  /* 步骤是真的有先后，所以有序号。 */
+  .www-steps {
+    display: grid;
+    counter-reset: step;
+  }
+
+  @media (min-width: 860px) {
+    .www-steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 40px;
+    }
+  }
+
+  .www-step {
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+  }
+
+  .www-step b {
+    flex: none;
+    width: 2ch;
+    color: var(--link);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .www-stats {
+    display: grid;
+  }
+
+  @media (min-width: 860px) {
+    .www-stats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: 40px;
+    }
+  }
+
+  .www-stat {
+    padding: 20px 0 22px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .www-stat b {
+    display: block;
+    color: var(--foreground);
+    font: 600 20px/1.3 var(--font-mono);
+    margin-bottom: 6px;
+  }
+
+  .www-stat span {
+    font-size: 15px;
+  }
+
+  .www-cta {
+    margin-top: clamp(40px, 6vw, 72px);
+    padding: clamp(28px, 4vw, 44px);
+    background: var(--foreground);
+    color: var(--background);
+    display: grid;
+    gap: 14px;
+  }
+
+  .www-cta h2 {
+    color: var(--background);
+    font-size: clamp(24px, 3.2vw, 38px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .www-cta p {
+    max-width: 44em;
+    opacity: 0.78;
+  }
+
+  /* ── 表格 ─────────────────────────────────────────────── */
+
+  .www-table-wrap {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .www-scroll {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  th {
+    padding: 12px 16px 12px 0;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted-foreground);
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 14px 16px 14px 0;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+
+  td a {
+    overflow-wrap: anywhere;
+  }
+
+  .www-mono {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    overflow-wrap: anywhere;
+  }
+
+  /* 首屏的示例表：同一台电脑的几个身份 */
+  .www-ledger {
+    border-top: 2px solid var(--foreground);
+  }
+
+  .www-ledger-cap {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 24px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+  }
+
+  .www-ledger-cap b {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  .www-ledger-cap span {
+    color: var(--muted-foreground);
+    font-size: 14px;
+  }
+
+  .www-ledger table {
+    min-width: 760px;
+  }
+
+  .www-ledger td {
+    white-space: nowrap;
+  }
+
+  .www-id {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .www-id b {
+    display: block;
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  .www-id small {
+    display: block;
+    color: var(--muted-foreground);
+    font-size: 13px;
+  }
+
+  .www-glyph {
+    flex: none;
+    color: var(--link);
+  }
+
+  .www-ledger .is-real td {
+    background: var(--muted);
+    color: var(--muted-foreground);
+  }
+
+  .www-ledger .is-real td:first-child {
+    padding-left: 12px;
+  }
+
+  .www-ledger .is-real .www-glyph,
+  .www-ledger .is-real b {
+    color: var(--muted-foreground);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .www-ledger tbody tr {
+      animation: www-ink 0.5s both;
+    }
+    .www-ledger tbody tr:nth-child(2) { animation-delay: 0.25s; }
+    .www-ledger tbody tr:nth-child(3) { animation-delay: 0.4s; }
+    .www-ledger tbody tr:nth-child(4) { animation-delay: 0.55s; }
+    .www-ledger tbody tr:nth-child(5) { animation-delay: 0.7s; }
+    @keyframes www-ink {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: none; }
+    }
+  }
+
+  /* ── 哈希块 / 命令块 ──────────────────────────────────── */
+
+  .www-hash {
+    position: relative;
+    padding: 16px 96px 16px 18px;
+    background: var(--muted);
+    border-radius: 3px;
+  }
+
+  .www-hash code {
+    display: block;
+    margin-top: 4px;
+    color: var(--foreground);
+    font: 400 14px/1.6 var(--font-mono);
+    overflow-wrap: anywhere;
+  }
+
+
+
+
+  /* ── 状态 ─────────────────────────────────────────────── */
+
+  .www-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .www-badge::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .www-badge-ok { color: var(--link); }
+  .www-badge-warn { color: var(--warn); }
+  .www-badge-bad { color: var(--destructive); }
+  .www-badge-bad::before { border-radius: 0; }
+
+  /* ── 套餐对比表 ───────────────────────────────────────── */
+
+  .www-plans table {
+    min-width: 680px;
+  }
+
+  .www-plans th {
+    vertical-align: bottom;
+    padding-top: 24px;
+  }
+
+  .www-plans th b {
+    display: block;
+    color: var(--foreground);
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .www-plans th,
+  .www-plans td {
+    padding-left: 16px;
+  }
+
+  .www-plans th:first-child,
+  .www-plans td:first-child {
+    padding-left: 0;
+    color: var(--body);
+  }
+
+  .www-plans .is-pick {
+    background: var(--accent-wash);
+  }
+
+  .www-plans th.is-pick {
+    box-shadow: inset 0 3px 0 var(--primary);
+  }
+
+  /* ── 文档 ─────────────────────────────────────────────── */
+
+  .www-doc-layout {
+    display: grid;
+    gap: 32px;
+    padding-top: 8px;
+  }
+
+  @media (min-width: 900px) {
+    .www-doc-layout {
+      grid-template-columns: 200px minmax(0, 1fr);
+      gap: 56px;
+    }
+  }
+
+  .www-toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 8px;
+    align-content: start;
+    font-size: 15px;
+  }
+
+  @media (min-width: 900px) {
+    .www-toc {
+      position: sticky;
+      top: 84px;
+      flex-direction: column;
+      flex-wrap: nowrap;
+    }
+  }
+
+  .www-toc a {
+    padding: 5px 10px;
+    border-radius: 3px;
+    color: var(--body);
+    text-decoration: none;
+  }
+
+  .www-toc a:hover {
+    background: var(--muted);
+    color: var(--foreground);
+  }
+
+  .www-doc {
+    max-width: 46em;
+  }
+
+  .www-doc h3 {
+    margin: 40px 0 12px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    scroll-margin-top: 84px;
+  }
+
+  .www-doc h3:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .www-doc p,
+  .www-doc ul {
+    margin-bottom: 14px;
+  }
+
+  .www-doc ul {
+    padding-left: 20px;
+    display: grid;
+    gap: 6px;
+  }
+
+  .www-doc code,
+  .www-card code,
+  .www-note code {
+    padding: 1px 5px;
+    border-radius: 2px;
+    background: var(--muted);
+    color: var(--foreground);
+    font: 400 0.88em var(--font-mono);
+  }
+
+  .www-hash code {
+    padding: 0;
+    background: transparent;
+  }
+
+  .www-callout {
+    padding: 14px 18px;
+    border-left: 3px solid var(--foreground);
+    background: var(--muted);
+    font-size: 15px;
+    max-width: 46em;
+  }
+
+
+  .u-mt-4 { margin-top: 16px; }
+  .u-mb-6 { margin-bottom: 24px; }
+}

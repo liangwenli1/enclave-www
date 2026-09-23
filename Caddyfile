@@ -1,5 +1,5 @@
 # TLS 在 Cloudflare 那一层终止，cloudflared 用明文 HTTP 连过来，并带上 X-Forwarded-Proto: https。
-# Caddy 默认不信上游的转发头、会把它改写成 http —— 那样许可证服务就判断不出用户其实走的是
+# Caddy 默认不信上游的转发头、会把它改写成 http —— 那样 API 就判断不出用户其实走的是
 # HTTPS，会话 cookie 永远不带 Secure。这里只信内网地址来的转发头（cloudflared 在本机 / 容器网段）。
 {
 	servers {
@@ -10,46 +10,25 @@
 	}
 }
 
-# 每个响应都要带的安全头。
-(security) {
-	header {
-		X-Content-Type-Options nosniff
-		Referrer-Policy strict-origin-when-cross-origin
-		X-Frame-Options DENY
-		# 站点没有内联脚本和内联样式，可以直接上严格 CSP。
-		Content-Security-Policy "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
-		-Server
-	}
-}
-
 # 官网。前面挂 Cloudflare Tunnel，指到这台机的 127.0.0.1:3011。
+# 页面由 Next.js 渲染（web），/api/* 交给账号服务（api），两者同源，浏览器侧没有跨域、cookie 直接可用。
+# 内容安全策略由 Next.js 按请求生成（带 nonce，见 web/proxy.ts），这里不重复设——两份 CSP 会同时生效、互相打架。
 :3011 {
-	root * /site
 	encode zstd gzip
 
-	# 错误响应不走上面的站点指令，所以这组头在 handle_errors 里再引一次。
-	import security
+	header {
+		X-Content-Type-Options nosniff
+		-Server
+	}
 
-	# 许可证服务与官网同源，浏览器侧没有跨域、cookie 直接可用。
 	handle /api/* {
 		reverse_proxy api:3012 {
-			# 只把 Caddy 认定的那个客户端 IP 传给许可证服务，丢掉客户端自带的那串。
+			# 只把 Caddy 认定的那个客户端 IP 传给账号服务，丢掉客户端自带的那串。
 			header_up X-Forwarded-For {client_ip}
 		}
 	}
 
 	handle {
-		try_files {path} {path}.html
-		file_server
-	}
-
-	handle_errors {
-		import security
-		@notfound expression {err.status_code} == 404
-		handle @notfound {
-			rewrite * /404.html
-			file_server
-		}
-		respond "{err.status_code} {err.status_text}"
+		reverse_proxy web:3000
 	}
 }

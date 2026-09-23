@@ -1,4 +1,4 @@
-# 官网 + 许可证服务。主机 3011 对外（3000 meridian、3010 trend-top 已占用）。
+# 官网（Next.js）+ 账号服务，都在这个仓库里。主机 3011 对外（3000 meridian、3010 trend-top 已占用）。
 # api 只在 compose 网络里，不映射到主机端口：外界只能经官网的 /api/* 访问。
 services:
   www:
@@ -6,28 +6,89 @@ services:
     container_name: enclave-www
     restart: unless-stopped
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
     ports:
       - "127.0.0.1:3011:3011"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      # 整个目录挂进去：单文件挂载在文件被改写时会留在旧 inode 上，看到的是旧内容。
-      # 站点文件都在 site/，所以 .env、Caddyfile、README 不会被当成静态资源发出去。
-      - ./site:/site:ro
+
+  web:
+    # 官网页面（Next.js）。源码在 ./web。
+    build: ./web
+    image: enclave-web:local
+    container_name: enclave-web
+    restart: unless-stopped
+    init: true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   api:
-    # 先在 enclave 仓库里构建：docker build -t enclave-vendor:latest apps/vendor
-    image: enclave-vendor:latest
-    container_name: enclave-vendor
+    # 云端 API（Go + Gin）。源码在 ./api。配置只来自挂进去的 config.yaml，不读环境变量。
+    build: ./api
+    image: enclave-api:local
+    container_name: enclave-api
     restart: unless-stopped
-    # node 作为 1 号进程不会响应 SIGTERM，停容器要等满 10 秒再被强杀；交给 init 转发信号。
-    init: true
-    environment:
-      PORT: "3012"
-      ENCLAVE_DATA_DIR: /data
-      ENCLAVE_ADMIN_TOKEN: ${ENCLAVE_ADMIN_TOKEN:?请先在 .env 里设置 ENCLAVE_ADMIN_TOKEN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    secrets:
+      - postgres_password
     volumes:
+      - ./config.yaml:/etc/enclave/config.yaml:ro
+      # 里面是给内核清单签名的私钥（license-key.pem）。客户端内置了它的公钥，别丢。
       - vendor-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3012/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: enclave-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: enclave
+      POSTGRES_USER: enclave
+      # 密码来自文件，不写在这里。
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets:
+      - postgres_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U enclave -d enclave"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  redis:
+    image: redis:7-alpine
+    container_name: enclave-redis
+    restart: unless-stopped
+    # 会话和限流计数。开着 AOF：重启后用户不用重新登录。
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgres_password
 
 volumes:
   vendor-data:
+  postgres-data:
+  redis-data:

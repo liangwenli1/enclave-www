@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: api/go.mod
+          cache-dependency-path: api/go.sum
+      - name: gofmt
+        run: test -z "$(gofmt -l .)"
+        working-directory: api
+      - run: go vet ./...
+        working-directory: api
+      - run: go test ./...
+        working-directory: api
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - run: npm run lint
+        working-directory: web
+      - run: npm run build
+        working-directory: web
+
+  # 一个全新的克隆只靠这个仓库就要能起来：这是和桌面客户端仓库解耦的验收。
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/init-config.sh http://127.0.0.1:3011 ci@example.test
+      - run: docker compose up -d --build --wait
+      - run: |
+          curl -fsS http://127.0.0.1:3011/ | grep -q '互不相认的浏览器'
+          curl -fsS http://127.0.0.1:3011/pricing >/dev/null
+          curl -fsS http://127.0.0.1:3011/api/health
+          curl -fsS http://127.0.0.1:3011/api/plans >/dev/null
+          # 注册 → 登录态 → 管理接口：数据库、Redis、config.yaml 里的管理员邮箱都得是通的
+          curl -fsS -c /tmp/jar -H 'content-type: application/json' -d '{"email":"ci@example.test","password":"ci-password-123"}' http://127.0.0.1:3011/api/auth/register
+          curl -fsS -b /tmp/jar http://127.0.0.1:3011/api/admin/billing | grep -q '"ok":true'
+      # 工作台这一侧：官网授权登录、环境名额、启动授权、心跳、独占锁、降档
+      - run: ./scripts/e2e-desktop.sh http://127.0.0.1:3011 ci@example.test ci-password-123
+      - if: always()
+        run: docker compose logs --no-color | tail -50

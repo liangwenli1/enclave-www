@@ -1,0 +1,33 @@
+# Enclave 云端 API 的配置。复制成 config.yaml 再改；config.yaml 不进 git。
+# 第一次部署直接跑 ./scripts/init-config.sh，它会生成 config.yaml 和数据库密码。
+#
+# 这里只放"服务起不来就缺的那几样"。支付通道（Creem）的 API key、Webhook 密钥、产品 ID
+# 不在这里：管理员登录官网后在 /admin 里填，加密后存进数据库。
+
+listen: ":3012"
+
+# 官网对外的地址。支付完成后跳回来、管理后台里显示的 Webhook 地址都用它。
+public_url: "https://你的域名"
+
+data_dir: "/data"
+
+# 32 字节的 base64（openssl rand -base64 32）。数据库里的密钥用它加密。
+# 换掉它，管理后台里填过的密钥就都解不开了，要重新填一遍。
+master_key: ""
+
+# 这些邮箱的账号是管理员。账号本身在官网照常注册。
+admin_emails:
+  - "you@example.com"
+
+database:
+  host: "postgres"
+  port: 5432
+  name: "enclave"
+  user: "enclave"
+  # 和 postgres 容器读同一个文件，密码只有一份。
+  password_file: "/run/secrets/postgres_password"
+
+redis:
+  addr: "redis:6379"
+  password: ""
+  db: 0
