@@ -46,7 +46,7 @@ jobs:
       - run: ./scripts/init-config.sh http://127.0.0.1:3011 ci@example.test
       - run: docker compose up -d --build --wait
       - run: |
-          curl -fsS http://127.0.0.1:3011/ | grep -q '互不相认的浏览器'
+          curl -fsS http://127.0.0.1:3011/ | grep -q '每个账号，一台独立的电脑'
           curl -fsS http://127.0.0.1:3011/pricing >/dev/null
           curl -fsS http://127.0.0.1:3011/api/health
           curl -fsS http://127.0.0.1:3011/api/plans >/dev/null

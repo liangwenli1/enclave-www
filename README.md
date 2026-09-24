@@ -48,4 +48,4 @@ cd web && npm install && npm run dev      # http://localhost:3000
 ```
 
 账号页需要账号服务：另开一个终端 `docker compose up -d api www`，然后从 `http://127.0.0.1:3011` 访问。
-视觉规范在 `enclave` 仓库的 `DESIGN.md`；颜色令牌在 `web/app/globals.css`，映射到 shadcn/ui 的语义变量上。
+官网的视觉规范在本仓库的 `DESIGN.md`；颜色令牌只在 `web/app/globals.css` 一处，映射到 shadcn/ui 的语义变量上。

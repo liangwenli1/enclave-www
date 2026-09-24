@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { JoinTeam } from "@/components/join-team";
+import { JoinTeam } from "@/components/account/join-team";
 
 export const metadata: Metadata = {
   title: "加入团队",
@@ -7,17 +7,12 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-const one = (v: string | string[] | undefined) =>
-  (Array.isArray(v) ? v[0] : v) ?? "";
+const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 
-export default async function JoinPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+export default async function JoinPage({ searchParams }: PageProps<"/join">) {
   const q = await searchParams;
   return (
-    <main className="www-main">
+    <main>
       <JoinTeam code={one(q.code)} />
     </main>
   );

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DeviceAuthorize } from "@/components/device-authorize";
+import { DeviceAuthorize } from "@/components/account/device-authorize";
 
 export const metadata: Metadata = {
   title: "登录工作台",
@@ -7,22 +7,13 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-const one = (v: string | string[] | undefined) =>
-  (Array.isArray(v) ? v[0] : v) ?? "";
+const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 
-export default async function DevicePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
+export default async function DevicePage({ searchParams }: PageProps<"/device">) {
   const q = await searchParams;
   return (
-    <main className="www-main">
-      <DeviceAuthorize
-        challenge={one(q.challenge)}
-        deviceId={one(q.device)}
-        deviceName={one(q.name)}
-      />
+    <main>
+      <DeviceAuthorize challenge={one(q.challenge)} deviceId={one(q.device)} deviceName={one(q.name)} />
     </main>
   );
 }

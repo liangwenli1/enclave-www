@@ -1,170 +1,152 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { Check, Minus } from "lucide-react";
+import { cn } from "cn";
+import { Faq } from "@/components/faq";
+import { PageHead } from "@/components/page-head";
+import { PlanCards } from "@/components/plan-cards";
+import { OfflineNote } from "@/components/plan-action";
+import { API_LABEL, FEATURED, PLANS, type SitePlan } from "@/lib/plans";
 
 export const metadata: Metadata = {
-  title: "套餐",
-  description: "安装包免费，按环境数订阅。内核安全更新对所有档位开放。",
+  title: "套餐与价格",
+  description: "免费档 3 个环境永久可用；Solo $9、Pro $29、Team $79 每月，按环境数付费，安装包免费，随时取消。",
+  alternates: { canonical: "/pricing" },
 };
 
-export default function Page() {
+type Value = string | boolean;
+const GROUPS: { title: string; rows: [string, (p: SitePlan) => Value][] }[] = [
+  {
+    title: "额度",
+    rows: [
+      ["环境数量", (p) => `${p.envLimit}`],
+      ["同时运行", (p) => `${p.concurrent}`],
+      ["每人可登录电脑", (p) => `${p.deviceLimit} 台`],
+      ["成员席位（含所有者）", (p) => `${p.seats} 人`],
+    ],
+  },
+  {
+    title: "环境",
+    rows: [
+      ["Chromium 类与 Firefox 类内核", () => true],
+      ["时区、语言、地理位置跟随代理出口", () => true],
+      ["带账号密码的代理，代理不通不启动", () => true],
+      ["批量执行", () => true],
+      ["自动化流程", () => true],
+    ],
+  },
+  {
+    title: "同步与团队",
+    rows: [
+      ["加密同步（环境、代理、登录态）", (p) => p.plan !== "free"],
+      ["按文件夹授权给成员", (p) => p.seats > 1],
+      ["操作日志", () => true],
+    ],
+  },
+  {
+    title: "接入",
+    rows: [["本机 API", (p) => (p.api === "off" ? false : API_LABEL[p.api])]],
+  },
+];
+
+function Cell({ value }: { value: Value }) {
+  if (value === true) return <Check className="mx-auto size-[18px] text-primary" aria-label="包含" />;
+  if (value === false) return <Minus className="mx-auto size-4 text-input" aria-label="不包含" />;
+  return <span className="tnum">{value}</span>;
+}
+
+const BILLING_FAQ: [string, string][] = [
+  [
+    "怎么付款？",
+    "付费档按月订阅，通过 Creem 收银台用银行卡付款，到期自动续费。付款方式和账单在账号页的「管理订阅」里查看和修改。",
+  ],
+  ["可以随时取消吗？", "可以。取消后，本期结束之前仍按原档位使用，到期后自动回到免费档。"],
+  [
+    "降档或到期后，超出额度的环境会怎样？",
+    "环境不会被删除，数据仍在本机。只有最早创建的若干个环境可以启动，数量等于当前档位的上限；续订，或删掉不用的环境即可。",
+  ],
+  ["团队的席位怎么算？", "Team 档最多 6 人，含所有者。每位成员用自己的账号登录工作台，各自可登录 1 台电脑。"],
+  ["可以不在线付款吗？", "可以。通过联系我们说明需要的档位与时长，确认收款后为账号开通。"],
+];
+
+export default function PricingPage() {
   return (
-    <main className="www-main">
-      <section className="www-hero www-hero-page">
-        <h1>按环境数订阅。</h1>
-        <p className="www-lead">
-          安装包不收费，功能由账号额度解锁。内核的安全更新面向所有套餐开放，
-          不会将已修复漏洞的内核限制在更高档位。
-        </p>
+    <main>
+      <PageHead
+        eyebrow="套餐"
+        title="按环境数付费"
+        lead="安装包免费。免费档永久可用；付费档按月订阅，随时可以取消。"
+      />
+
+      <section className="py-14 sm:py-16">
+        <div className="site-wrap">
+          <PlanCards />
+          <OfflineNote className="mt-5" />
+        </div>
       </section>
 
-      <section className="www-section www-plans">
-        <div className="www-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th></th>
-                <th>
-                  <b>免费</b>注册就有
-                </th>
-                <th>
-                  <b>Solo</b>个人使用
-                </th>
-                <th className="is-pick">
-                  <b>Pro</b>多台设备与脚本接入
-                </th>
-                <th>
-                  <b>Team</b>含成员席位
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>环境数量</td>
-                <td>3</td>
-                <td>50</td>
-                <td className="is-pick">200</td>
-                <td>200 起</td>
-              </tr>
-              <tr>
-                <td>同时运行</td>
-                <td>1</td>
-                <td>3</td>
-                <td className="is-pick">8</td>
-                <td>8</td>
-              </tr>
-              <tr>
-                <td>成员席位</td>
-                <td>1 人</td>
-                <td>1 人</td>
-                <td className="is-pick">1 人</td>
-                <td>6 人</td>
-              </tr>
-              <tr>
-                <td>可登录设备</td>
-                <td>1</td>
-                <td>1</td>
-                <td className="is-pick">2</td>
-                <td>每人 1 台</td>
-              </tr>
-              <tr>
-                <td>成员权限</td>
-                <td>—</td>
-                <td>—</td>
-                <td className="is-pick">—</td>
-                <td>按文件夹授权成员；操作员无法查看代理密码，也无法导出</td>
-              </tr>
-              <tr>
-                <td>脚本接口（Puppeteer / Playwright）</td>
-                <td>不含</td>
-                <td>只读</td>
-                <td className="is-pick">可启动和停止</td>
-                <td>可启动与停止</td>
-              </tr>
-              <tr>
-                <td>环境导出与导入</td>
-                <td>有</td>
-                <td>有</td>
-                <td className="is-pick">有</td>
-                <td>有</td>
-              </tr>
-              <tr>
-                <td></td>
-                <td>
-                  <Link
-                    className={buttonVariants({
-                      variant: "outline",
-                      size: "lg",
-                    })}
-                    href="/account"
-                  >
-                    注册
-                  </Link>
-                </td>
-                <td>
-                  <Link
-                    className={buttonVariants({
-                      variant: "outline",
-                      size: "lg",
-                    })}
-                    href="/account#upgrade"
-                  >
-                    申请开通
-                  </Link>
-                </td>
-                <td className="is-pick">
-                  <Link
-                    className={buttonVariants({ size: "lg" })}
-                    href="/account#upgrade"
-                  >
-                    申请开通
-                  </Link>
-                </td>
-                <td>
-                  <Link
-                    className={buttonVariants({
-                      variant: "outline",
-                      size: "lg",
-                    })}
-                    href="/account#contact"
-                  >
-                    联系我们
-                  </Link>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <section className="pb-24">
+        <div className="site-wrap">
+          <h2 className="text-[24px] font-semibold tracking-[-0.01em]">完整对比</h2>
+          <div className="table-scroll mt-6 rounded-xl border border-border">
+            <table className="data-table min-w-[720px] table-fixed">
+              <colgroup>
+                <col className="w-[32%]" />
+                {PLANS.map((p) => (
+                  <col key={p.plan} />
+                ))}
+              </colgroup>
+              <thead>
+                <tr>
+                  <th scope="col">
+                    <span className="sr-only">项目</span>
+                  </th>
+                  {PLANS.map((p) => (
+                    <th
+                      key={p.plan}
+                      scope="col"
+                      className={cn("text-center text-[14px] text-foreground", p.plan === FEATURED && "bg-chip text-chip-foreground")}
+                    >
+                      {p.name}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              {GROUPS.map((g) => (
+                <tbody key={g.title}>
+                  <tr>
+                    <th scope="colgroup" className="bg-background pt-6 text-[13px] text-foreground">
+                      {g.title}
+                    </th>
+                    {PLANS.map((p) => (
+                      <td key={p.plan} className={cn(p.plan === FEATURED && "bg-chip/40")} />
+                    ))}
+                  </tr>
+                  {g.rows.map(([label, value]) => (
+                    <tr key={label}>
+                      <th scope="row" className="bg-transparent text-[14.5px] font-normal whitespace-normal text-body">
+                        {label}
+                      </th>
+                      {PLANS.map((p) => (
+                        <td key={p.plan} className={cn("text-center", p.plan === FEATURED && "bg-chip/40")}>
+                          <Cell value={value(p)} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              ))}
+            </table>
+          </div>
+          <p className="mt-4 text-[13.5px] text-muted-foreground">
+            价格以美元计，不含可能产生的税费。每一档都能下载内核的安全更新。
+          </p>
         </div>
-        <p className="www-note u-mt-4">
-          付费套餐按环境数与设备数报价：在账号页提交申请，我们将在一个工作日内回复具体价格与开通方式。
-          需要更多环境或私有部署，同样通过该入口联系我们。
-        </p>
       </section>
 
-      <section className="www-section">
-        <div className="www-section-head">
-          <h2>额度如何生效</h2>
-        </div>
-        <div className="www-grid www-grid-3">
-          <article className="www-card">
-            <h3>订阅一变，立刻生效</h3>
-            <p>
-              新建与启动环境前，工作台都会向服务器确认一次。升级、续订、到期均无需等待同步，也无需重新登录。
-            </p>
-          </article>
-          <article className="www-card">
-            <h3>所有设备合并计算</h3>
-            <p>
-              环境数与同时运行数按账号计算，而非按设备计算。同一环境在同一时刻只能在一台设备上打开，避免两端同时写入导致数据损坏。
-            </p>
-          </article>
-          <article className="www-card">
-            <h3>服务器仅用于计数</h3>
-            <p>
-              我们仅登记环境名称与内核版本，用于统计额度。指纹、代理与 Cookie
-              始终保存在本机，我们无法读取。
-            </p>
-          </article>
+      <section className="border-t border-border py-24">
+        <div className="site-wrap grid gap-10 lg:grid-cols-[1fr_2fr]">
+          <h2 className="display-3">付款与订阅</h2>
+          <Faq items={BILLING_FAQ} />
         </div>
       </section>
     </main>

@@ -1,162 +1,112 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Ledger } from "@/components/ledger";
-import { buttonVariants } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import { Faq } from "@/components/faq";
+import { FingerprintTable } from "@/components/fingerprint-table";
+import { Closing, Scenes } from "@/components/home/closing";
+import { Facts, Hero } from "@/components/home/hero";
+import { Linkage } from "@/components/home/linkage";
+import { Product } from "@/components/home/product";
+import { SecurityBand } from "@/components/home/security";
+import { PlanCards } from "@/components/plan-cards";
+import { OfflineNote } from "@/components/plan-action";
 
 export const metadata: Metadata = {
-  description:
-    "内核运行在本机。每个环境拥有独立的 Cookie、指纹与出口，启动前校验哈希，不符即拒启。",
+  alternates: { canonical: "/" },
 };
 
-export default function Page() {
+const FAQ: [string, string][] = [
+  [
+    "能保证账号不被封吗？",
+    "不能，任何承诺「保证不封」的说法都不可信。Enclave 让平台看不出多个账号来自同一台电脑；账号本身的操作是否合规，仍然决定它会不会被封。",
+  ],
+  [
+    "数据存在哪里？",
+    "环境、代理和登录态默认只保存在本机。开启加密同步后，登录态和代理密码在本机加密后才上传，服务器只保存密文。环境名称和内核版本会登记在服务器上，用于统计额度。",
+  ],
+  [
+    "员工离职了怎么办？",
+    "在账号页将其移出团队：对应的电脑立即解绑，其经手过的环境自动更换密钥。已经同步到那台电脑上的内容无法收回；要让其中的 Cookie 失效，需要在各平台执行「退出所有设备」。",
+  ],
+  [
+    "免费版有什么限制？",
+    "3 个环境、同时运行 1 个、登录 1 台电脑，不含加密同步。内核的安全更新与付费档相同，批量执行和自动化同样可用。",
+  ],
+  [
+    "支持哪些系统？",
+    "Windows 10 / 11 与 macOS（Apple Silicon）。安装包的 SHA256 公布在下载页，安装前可以自行核对。",
+  ],
+];
+
+export default function Home() {
   return (
-    <main className="www-main">
-      <section className="www-hero">
-        <h1>一台电脑，很多个互不相认的浏览器。</h1>
-        <p className="www-lead">
-          每个环境拥有独立的指纹、Cookie 与出口
-          IP，全部运行在本机。店铺、广告账户、社媒矩阵各自独立，
-          网站无法看出它们来自同一个人。
-        </p>
-        <div className="www-actions">
-          <Link className={buttonVariants({ size: "lg" })} href="/download">
-            下载
-          </Link>
-          <Link
-            className={buttonVariants({ variant: "outline", size: "lg" })}
-            href="/pricing"
-          >
-            看套餐
-          </Link>
-        </div>
-        <p className="www-note">
-          安装包免费，额度由账号解锁。支持 Windows 与 macOS（Apple Silicon）。
-        </p>
-      </section>
+    <main>
+      <Hero />
+      <Facts />
+      <Linkage />
+      <div className="border-t border-border" />
+      <Product />
+      <SecurityBand />
 
-      <Ledger />
-
-      <section className="www-section">
-        <div className="www-section-head">
-          <h2>它和「网页版指纹浏览器」的区别</h2>
-        </div>
-        <div className="www-grid www-grid-3">
-          <article className="www-card">
-            <h3>浏览器运行在本机</h3>
-            <p>
-              并非在我们的服务器上运行 Chrome 再将画面传回。内核进程、user-data
-              目录与调试端口均在本机，调试端口仅监听 127.0.0.1。
+      <section id="fingerprints" className="bg-muted py-24 sm:py-28">
+        <div className="site-wrap">
+          <div className="max-w-[42em]">
+            <p className="eyebrow">指纹清单</p>
+            <h2 className="display-3 mt-3">只写实测过的</h2>
+            <p className="lead mt-5">
+              每一格都在真实内核上测过。标「跟随本机」的，是这类内核本身改不了的项；需要跨系统的画像时，选 Firefox 类。
             </p>
-          </article>
-          <article className="www-card">
-            <h3>一个环境一套画像</h3>
-            <p>
-              种子锁定后重启保持稳定。WebRTC 默认不暴露真实 IP；启用代理时关闭
-              QUIC 与 DoH，避免绕过代理直连。
-            </p>
-          </article>
-          <article className="www-card">
-            <h3>失败就说失败</h3>
-            <p>
-              哈希不符、内核缺失、沙箱不可用、调试握手失败，各有对应原因码，并停留在错误状态，
-              不会在失败时仍显示 Running。
-            </p>
-          </article>
-        </div>
-      </section>
-
-      <section className="www-section">
-        <div className="www-section-head">
-          <h2>六步开始</h2>
-          <p>从注册到本机打开第一个环境窗口</p>
-        </div>
-        <div className="www-steps">
-          <div className="www-step">
-            <b>01</b>
-            <span>注册账号，免费档含 3 个环境。</span>
           </div>
-          <div className="www-step">
-            <b>02</b>
-            <span>下载安装包，核对 SHA256 后安装。</span>
+          <div className="mt-10">
+            <FingerprintTable />
           </div>
-          <div className="www-step">
-            <b>03</b>
-            <span>打开工作台登录，额度随账号同步。</span>
-          </div>
-          <div className="www-step">
-            <b>04</b>
-            <span>内核页一键准入，自动下载并校验。</span>
-          </div>
-          <div className="www-step">
-            <b>05</b>
-            <span>创建环境、配置代理、锁定指纹并启动。</span>
-          </div>
-          <div className="www-step">
-            <b>06</b>
-            <span>本机打开独立内核窗口，开始工作。</span>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-4 text-[13.5px] text-muted-foreground">
+            <p>「尚未实测」的项，测过之前不打勾。</p>
+            <Link href="/check" className="inline-flex items-center gap-1.5 font-medium text-link hover:underline hover:underline-offset-4">
+              检测当前浏览器的指纹
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
           </div>
         </div>
       </section>
 
-      <section className="www-section">
-        <div className="www-section-head">
-          <h2>可核对的事实</h2>
-          <p>此处仅列出可验证的内容</p>
-        </div>
-        <div className="www-stats">
-          <div className="www-stat">
-            <b>127.0.0.1</b>
-            <span>
-              内核调试端口与本机接口的唯一监听地址；接口需令牌，不接受网页跨域调用。
-            </span>
+      <Scenes />
+
+      <section id="pricing" className="border-t border-border py-24 sm:py-28">
+        <div className="site-wrap">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div className="max-w-[40em]">
+              <p className="eyebrow">套餐</p>
+              <h2 className="display-3 mt-3">按环境数付费，安装包免费</h2>
+            </div>
+            <Link href="/pricing" className="inline-flex items-center gap-1.5 font-medium text-link hover:underline hover:underline-offset-4">
+              完整对比
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
           </div>
-          <div className="www-stat">
-            <b>SHA256</b>
-            <span>
-              内核与安装包的哈希全部公示在下载页，启动前逐次校验实际执行的文件。
-            </span>
+          <div className="mt-10">
+            <PlanCards />
           </div>
-          <div className="www-stat">
-            <b>BSD-3</b>
-            <span>
-              内核基于 Ungoogled Chromium，许可证公开。我们不声称内核 100% 自研。
-            </span>
+          <div className="mt-5 grid gap-2">
+            <p className="text-[13.5px] text-muted-foreground">
+              每一档都能下载内核的安全更新；批量执行与自动化各档都有，同时运行数按档位。
+            </p>
+            <OfflineNote />
           </div>
         </div>
       </section>
 
-      <section className="www-cta">
-        <h2>先核哈希，再安装。</h2>
-        <p>
-          下载页公示安装包与内核的完整 SHA256
-          与字节数。安装前花十秒核对一遍，这是无需依赖我们即可完成的最有效验证。
-        </p>
-        <div className="www-actions">
-          <Link className={buttonVariants({ size: "lg" })} href="/download">
-            去下载页
-          </Link>
+      <section id="faq" className="border-t border-border py-24 sm:py-28">
+        <div className="site-wrap grid gap-10 lg:grid-cols-[1fr_2fr]">
+          <div>
+            <p className="eyebrow">常见问题</p>
+            <h2 className="display-3 mt-3">购买之前</h2>
+          </div>
+          <Faq items={FAQ} />
         </div>
       </section>
 
-      <section className="www-section">
-        <div className="www-section-head">
-          <h2>我们不承诺什么</h2>
-        </div>
-        <div className="www-grid www-grid-2">
-          <article className="www-card">
-            <h3>不承诺过任何网站的风控</h3>
-            <p>
-              指纹隔离是工具，不是保证。任何声称「保证通过某站风控」的说法都不可信，我们也不作此承诺。
-            </p>
-          </article>
-          <article className="www-card">
-            <h3>不承诺防住已经被控的电脑</h3>
-            <p>
-              操作系统本身一旦被入侵，本机运行的任何软件都无法提供保护。我们防范的是恶意内核包、环境间数据串用、代理泄露这些具体问题。
-            </p>
-          </article>
-        </div>
-      </section>
+      <Closing />
     </main>
   );
 }

@@ -1,29 +1,20 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 
-export const metadata: Metadata = {
-  title: "页面不存在",
-};
-
 export default function NotFound() {
   return (
-    <main className="www-main">
-      <section className="www-hero www-hero-page">
-        <h1>这个页面不存在</h1>
-        <p className="www-lead">地址可能有误，或该页面已迁移。</p>
-        <div className="www-actions">
-          <Link className={buttonVariants({ size: "lg" })} href="/">
-            回到首页
-          </Link>
-          <Link
-            className={buttonVariants({ variant: "outline", size: "lg" })}
-            href="/download"
-          >
-            下载与校验
-          </Link>
-        </div>
-      </section>
+    <main className="site-wrap grid min-h-[60vh] content-center justify-items-start py-20">
+      <p className="font-mono text-[15px] text-muted-foreground">404</p>
+      <h1 className="display-3 mt-3">没有这个页面</h1>
+      <p className="lead mt-4 max-w-[34em]">链接可能已经失效。可以从首页或文档重新找起。</p>
+      <div className="mt-8 flex flex-wrap gap-3">
+        <Link href="/" className={buttonVariants()}>
+          回到首页
+        </Link>
+        <Link href="/docs" className={buttonVariants({ variant: "outline" })}>
+          查看文档
+        </Link>
+      </div>
     </main>
   );
 }

@@ -1,25 +1,16 @@
 import type { Metadata } from "next";
-import { AccountPanel } from "@/components/account-panel";
-import { ContactForm } from "@/components/contact-form";
+import { AccountPanel } from "@/components/account/account-panel";
 
 export const metadata: Metadata = {
   title: "账号",
-  description: "注册、登录，查看套餐与已绑定设备，申请升级或联系我们。",
+  description: "登录或注册 Enclave，查看档位、额度、已登录的电脑与团队。",
+  robots: { index: false },
 };
 
 export default function AccountPage() {
   return (
-    <main className="www-main">
+    <main>
       <AccountPanel />
-      <section className="www-section" id="contact">
-        <div className="www-section-head">
-          <h2>联系我们</h2>
-          <p>销售咨询、开通与安全披露均通过此处提交</p>
-        </div>
-        <div className="pt-4">
-          <ContactForm />
-        </div>
-      </section>
     </main>
   );
 }

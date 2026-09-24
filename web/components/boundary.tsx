@@ -18,12 +18,10 @@ export class Boundary extends Component<{ name: string; children: ReactNode }, S
   render() {
     if (this.state.message !== null) {
       return (
-        <div className="border border-destructive/40 p-4 text-sm">
+        <div className="rounded-2xl border border-destructive/30 bg-card p-5 text-sm">
           <p className="font-medium">{this.props.name}暂时无法显示。</p>
-          <p className="text-muted-foreground">
-            页面其余部分不受影响。刷新可重试；若持续出现，请通过账号页的联系表单反馈。
-          </p>
-          <p className="www-mono mt-2 text-xs text-muted-foreground">{this.state.message}</p>
+          <p className="mt-1 text-muted-foreground">页面其余部分不受影响。刷新可重试；若持续出现，请通过联系我们反馈。</p>
+          <p className="mt-2 font-mono text-xs text-muted-foreground">{this.state.message}</p>
         </div>
       );
     }

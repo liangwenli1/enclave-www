@@ -7,7 +7,10 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
+import { CodeValue } from "@/components/copy-button";
 import { Field } from "@/components/field";
+import { PageHead } from "@/components/page-head";
+import { Panel } from "@/components/panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -44,52 +47,51 @@ export function AdminConsole() {
 
   if (gate !== "ok") {
     return (
-      <section className="www-hero www-hero-page">
-        <h1>管理后台</h1>
-        <p className="www-lead">
-          {gate === "loading"
+      <PageHead
+        compact
+        title="管理后台"
+        lead={
+          gate === "loading"
             ? "正在确认身份…"
             : gate === "anonymous"
               ? "先在账号页登录管理员账号。"
-              : "这个账号不是管理员。管理员邮箱写在服务器的 config.yaml 里。"}
-        </p>
-      </section>
+              : "这个账号不是管理员。管理员邮箱写在服务器的 config.yaml 里。"
+        }
+        className="pb-24"
+      />
     );
   }
 
   return (
     <>
-      <section className="www-hero www-hero-page">
-        <h1>管理后台</h1>
-      </section>
-      <div
-        className="inline-flex flex-wrap rounded-md border border-input"
-        role="tablist"
-      >
-        {TABS.map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            role="tab"
-            aria-selected={tab === key}
-            onClick={() => setTab(key)}
-            className={
-              tab === key
-                ? "bg-foreground px-4 py-2 text-sm font-semibold text-background"
-                : "px-4 py-2 text-sm text-body hover:bg-muted"
-            }
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-      <div className="pt-8">
-        {tab === "billing" ? <Billing /> : null}
-        {tab === "storage" ? <Storage /> : null}
-        {tab === "mail" ? <Mail /> : null}
-        {tab === "users" ? <Users /> : null}
-        {tab === "kernels" ? <Kernels /> : null}
-        {tab === "messages" ? <Messages /> : null}
+      <PageHead compact title="管理后台" />
+      <div className="site-wrap pb-24">
+        <div role="tablist" aria-label="管理后台" className="inline-flex flex-wrap gap-1 rounded-full bg-accent p-1">
+          {TABS.map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={tab === key}
+              onClick={() => setTab(key)}
+              className={
+                tab === key
+                  ? "cursor-pointer rounded-full bg-card px-4 py-1.5 text-sm font-medium text-foreground shadow-sm"
+                  : "cursor-pointer rounded-full px-4 py-1.5 text-sm text-body hover:text-foreground"
+              }
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="grid gap-6 pt-8">
+          {tab === "billing" ? <Billing /> : null}
+          {tab === "storage" ? <Storage /> : null}
+          {tab === "mail" ? <Mail /> : null}
+          {tab === "users" ? <Users /> : null}
+          {tab === "kernels" ? <Kernels /> : null}
+          {tab === "messages" ? <Messages /> : null}
+        </div>
       </div>
     </>
   );
@@ -105,13 +107,9 @@ function Block({
   children: ReactNode;
 }) {
   return (
-    <section className="grid gap-4 pb-10">
-      <div className="www-section-head">
-        <h2>{title}</h2>
-        {note ? <p>{note}</p> : null}
-      </div>
-      {children}
-    </section>
+    <Panel title={title} note={note}>
+      <div className="grid gap-5">{children}</div>
+    </Panel>
   );
 }
 
@@ -194,10 +192,7 @@ function Billing() {
           : "配置未完成，用户暂时无法在线订阅"
       }
     >
-      <div className="www-hash">
-        <p className="www-overline">在 Creem 后台把 Webhook 地址填成这个</p>
-        <code>{data.webhookURL}</code>
-      </div>
+      <CodeValue label="在 Creem 后台把 Webhook 地址填成这个" value={data.webhookURL} />
       <form
         key={JSON.stringify(data)}
         className="grid max-w-[560px] gap-4"
@@ -634,8 +629,8 @@ function Users() {
           aria-label="按邮箱找"
         />
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
-        <div className="www-scroll">
-          <table>
+        <div className="table-scroll rounded-xl border border-border">
+          <table className="data-table">
             <thead>
               <tr>
                 <th>邮箱</th>
@@ -833,8 +828,8 @@ function Kernels() {
         note="下架后：已下载的用户可继续使用，未下载的用户将不再看到该版本"
       >
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
-        <div className="www-scroll">
-          <table>
+        <div className="table-scroll rounded-xl border border-border">
+          <table className="data-table">
             <thead>
               <tr>
                 <th>类</th>
@@ -849,10 +844,10 @@ function Kernels() {
               {(data?.kernels ?? []).map((k) => (
                 <tr key={`${k.Version}/${k.Platform}`}>
                   <td>{ENGINES[k.Engine]?.label ?? k.Engine}</td>
-                  <td className="www-mono">{k.Version}</td>
+                  <td className="font-mono text-[13px]">{k.Version}</td>
                   <td>{k.Platform}</td>
                   <td>{k.Channel === "stable" ? "稳定" : "预览"}</td>
-                  <td className="www-mono">{k.SHA256.slice(0, 16)}…</td>
+                  <td className="font-mono text-[13px]">{k.SHA256.slice(0, 16)}…</td>
                   <td className="text-right">
                     <Button
                       variant="link"
@@ -896,12 +891,12 @@ function Messages() {
         <p className="text-muted-foreground">还没有留言。</p>
       ) : null}
       {(data?.messages ?? []).map((m) => (
-        <article key={m.ID} className="www-card">
-          <h3>
+        <article key={m.ID} className="rounded-xl border border-border p-4">
+          <h3 className="font-semibold">
             {topic[m.Topic] ?? m.Topic}，{m.Email}
           </h3>
-          <p className="whitespace-pre-wrap">{m.Message}</p>
-          <p className="www-note">
+          <p className="mt-1.5 whitespace-pre-wrap text-body">{m.Message}</p>
+          <p className="mt-2 text-[13px] text-muted-foreground">
             {new Date(m.CreatedAt).toLocaleString("zh-CN")}
           </p>
         </article>

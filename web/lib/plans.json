@@ -1,0 +1,8 @@
+{
+  "plans": [
+    { "plan": "free", "name": "免费", "price": 0, "envLimit": 3, "concurrent": 1, "deviceLimit": 1, "seats": 1, "api": "off" },
+    { "plan": "solo", "name": "Solo", "price": 9, "envLimit": 50, "concurrent": 3, "deviceLimit": 1, "seats": 1, "api": "discover" },
+    { "plan": "pro", "name": "Pro", "price": 29, "envLimit": 200, "concurrent": 8, "deviceLimit": 2, "seats": 1, "api": "full" },
+    { "plan": "team", "name": "Team", "price": 79, "envLimit": 200, "concurrent": 8, "deviceLimit": 1, "seats": 6, "api": "full" }
+  ]
+}

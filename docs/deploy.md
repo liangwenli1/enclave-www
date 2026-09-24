@@ -42,9 +42,11 @@ docker compose up -d --build
 用 `config.yaml` 里 `admin_emails` 列出的邮箱在官网**照常注册**，登录后账号页会多一个「管理后台」，
 地址是 `/admin`。谁是管理员只看这份配置；每个管理接口服务器都会再查一遍，页面只是界面。
 
-后台里有四块：
+后台里有六块：
 
 - **支付通道**：Creem 的环境、API key、Webhook 密钥、三个档位的产品 ID。
+- **同步存储**：放加密登录态的对象存储（R2 或任何 S3 兼容的）。
+- **发信服务器**：发团队邀请信的 SMTP。没配也能用，邀请链接由所有者自己发。
 - **用户与订阅**：看用户；手动开通 / 改档（线下收款、送测试号、支付通道出问题时应急）。
 - **内核上架**：见下面。
 - **留言**：联系表单收到的内容，包括安全披露。
@@ -56,8 +58,13 @@ docker compose up -d --build
    （`https://你的域名/api/webhooks/creem`），记下它的签名密钥。
 3. 在管理后台「支付通道」里填：环境、API key、Webhook 密钥、三个产品 ID，保存。
    密钥加密后存数据库；之后页面上只显示末四位，原文不会再从服务器出来。
+   **三样都填了**（API key、Webhook 密钥、这一档的产品 ID），官网套餐页上这一档才从「暂未开通」变成「订阅」——
+   少了 Webhook 密钥时付款通知验不过签，钱收了档位开不出来，所以不算能买。
 4. 用 Creem 的测试卡在账号页订阅一次，确认档位变了；再到「管理订阅」里取消，确认状态变成"已取消"。
 5. 切正式：把环境改成「正式」，换成正式的 API key、Webhook 密钥和产品 ID。
+
+官网套餐页上的价格写在 `web/lib/plans.json`（美元 / 月）。**Creem 里三个产品的价格要和它一致**；
+额度那几列由 `api/internal/license/site_test.go` 钉住和服务器一致，价格没有办法自动核对，改价时两边一起改。
 
 订阅状态完全由 Webhook 驱动：
 
@@ -118,3 +125,18 @@ curl https://你的域名/api/v1/pubkey
 
 在 `enclave` 仓库的 GitHub Actions 变量里设 `ENCLAVE_CLOUD_URL = https://你的域名`（不带路径和结尾的斜杠）。
 工作台要登录后才能用，所以这一项是必填的，没有它不出包。客户端只接受 https 地址。
+
+## 发布新版客户端后，更新下载页
+
+下载页只列 `web/lib/release.json` 里登记的安装包；没登记时显示「即将开放下载」，不给任何链接。
+安装包的文件名、SHA256、字节数由 `release.yml` 写进 Release 说明，下载页从那里取，**不手抄哈希**：
+
+```bash
+# 在任意装了 gh 的机器上（能读 enclave 仓库的 Release）
+gh release view v0.10.4 -R liangwenli1/enclave --json tagName,publishedAt,body | node web/scripts/set-release.mjs
+git commit -am "Download page: 0.10.4"
+docker compose up -d --build web
+```
+
+只登记用正式域名打的包（`ENCLAVE_CLOUD_URL` 设好之后打的 tag）：没有域名的包装上去登录不了，不该出现在下载页。
+更新日志在 `web/lib/changelog.ts`，按大版本写，只列用户看得到的变化。

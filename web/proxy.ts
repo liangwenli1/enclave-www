@@ -32,10 +32,11 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // 静态资源和预取请求不需要 nonce。
+  // 静态资源（截图、图标、分享图、robots、sitemap）和预取请求不需要 nonce。
   matcher: [
     {
-      source: "/((?!api|_next/static|_next/image|favicon.svg).*)",
+      source:
+        "/((?!api|_next/static|_next/image|shots/|icon\\.svg|apple-icon|opengraph-image|twitter-image|robots\\.txt|sitemap\\.xml).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

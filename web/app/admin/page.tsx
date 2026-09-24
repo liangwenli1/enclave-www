@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function AdminPage() {
   return (
-    <main className="www-main">
+    <main>
       <AdminConsole />
     </main>
   );
