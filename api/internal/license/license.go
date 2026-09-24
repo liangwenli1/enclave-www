@@ -31,7 +31,8 @@ type Plan struct {
 	API   string `json:"api"`
 }
 
-// 档位只在这里定义。官网的套餐页和客户端都从这里取，不自己抄数字。
+// 档位只在这里定义，服务器按它执行额度。官网套餐页抄了一份在 web/lib/plans.json，
+// site_test.go 钉住两边一致；客户端每次都来问服务器，不自己存数字。
 var Plans = []Plan{
 	{"free", "Solo Free", 3, 1, 1, 1, "off"},
 	{"solo", "Solo", 50, 3, 1, 1, "discover"},

@@ -224,7 +224,7 @@ func (s *Server) getBilling(c *gin.Context) {
 		"webhookSecret": hint(b.WebhookSecret),
 		"products":      products,
 		"webhookURL":    s.cfg.PublicURL + "/api/webhooks/creem",
-		"ready":         b.Ready() && b.WebhookSecret != "",
+		"ready":         b.Ready(),
 	})
 }
 

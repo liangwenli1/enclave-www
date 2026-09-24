@@ -33,7 +33,25 @@ type Settings struct {
 	BaseURL string
 }
 
-func (s Settings) Ready() bool { return s.APIKey != "" && len(s.Products) > 0 }
+// Ready 能收钱、也能在收到钱之后开通。少了 Webhook 密钥，付款通知一律验不过签（见 Verify），
+// 钱收了档位却开不了——所以它和 API key 一样是必需的。
+func (s Settings) Ready() bool {
+	return s.APIKey != "" && s.WebhookSecret != "" && len(s.Products) > 0
+}
+
+// Online 现在能在线订阅的档位：通道就绪，且这一档填了产品 ID。永远不是 nil（发出去是 []）。
+func (s Settings) Online(plans []string) []string {
+	out := []string{}
+	if !s.Ready() {
+		return out
+	}
+	for _, p := range plans {
+		if s.Products[p] != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
 
 func (s Settings) base() string {
 	switch {

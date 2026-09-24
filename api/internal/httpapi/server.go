@@ -47,7 +47,10 @@ func New(cfg *config.Config, st *store.Store, signer *license.Signer, box *secre
 
 func (s *Server) routes(g *gin.RouterGroup) {
 	g.GET("/health", func(c *gin.Context) { ok(c, gin.H{"service": "enclave-api"}) })
-	g.GET("/plans", func(c *gin.Context) { ok(c, gin.H{"plans": license.Plans}) })
+	// online：现在能在线订阅的档位。官网套餐页靠它决定付费档显示「订阅」还是「暂未开通」。
+	g.GET("/plans", func(c *gin.Context) {
+		ok(c, gin.H{"plans": license.Plans, "online": s.billing().Online(paidPlans)})
+	})
 
 	g.POST("/auth/register", s.limited("auth"), s.register)
 	g.POST("/auth/login", s.limited("auth"), s.login)

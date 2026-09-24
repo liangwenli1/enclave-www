@@ -77,3 +77,39 @@ func TestPlanOfProduct(t *testing.T) {
 		t.Fatal("产品 ID 要能反查到档位，不认识的产品返回空")
 	}
 }
+
+// 官网套餐页按 Online 决定付费档显示「订阅」还是「暂未开通」。
+// 少任何一样（API key、Webhook 密钥、这一档的产品 ID）都不能算能买：
+// 没有 Webhook 密钥时付款通知验不过签，钱收了档位却开不出来。
+func TestOnlineNeedsKeyWebhookSecretAndProduct(t *testing.T) {
+	paid := []string{"solo", "pro", "team"}
+	full := Settings{APIKey: "creem_x", WebhookSecret: "whsec_x", Products: map[string]string{"pro": "prod_1", "team": "prod_2"}}
+
+	cases := []struct {
+		name string
+		s    Settings
+		want []string
+	}{
+		{"全都配好", full, []string{"pro", "team"}},
+		{"缺 API key", Settings{WebhookSecret: "whsec_x", Products: full.Products}, []string{}},
+		{"缺 Webhook 密钥", Settings{APIKey: "creem_x", Products: full.Products}, []string{}},
+		{"一个产品都没有", Settings{APIKey: "creem_x", WebhookSecret: "whsec_x"}, []string{}},
+	}
+	for _, tc := range cases {
+		got := tc.s.Online(paid)
+		if got == nil {
+			t.Fatalf("%s：返回了 nil，发出去会是 null", tc.name)
+		}
+		if len(got) != len(tc.want) {
+			t.Fatalf("%s：想要 %v，得到 %v", tc.name, tc.want, got)
+		}
+		for i := range got {
+			if got[i] != tc.want[i] {
+				t.Fatalf("%s：想要 %v，得到 %v", tc.name, tc.want, got)
+			}
+		}
+		if tc.s.Ready() != (len(tc.want) > 0) {
+			t.Fatalf("%s：Ready() 和能买的档位对不上", tc.name)
+		}
+	}
+}

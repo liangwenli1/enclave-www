@@ -199,7 +199,7 @@ func (s *Server) putProfile(c *gin.Context) {
 	before := s.seenByOperators(o.ID)
 	err := s.store.PutProfile(store.Profile{
 		ID: id, OrgID: o.ID, CreatedBy: user(c).ID, Name: clip(in.Name, 128),
-		FolderID: folderOr(s, o.ID, in.FolderID),
+		FolderID:   folderOr(s, o.ID, in.FolderID),
 		EngineType: "fingerprint-chromium", EngineVersion: clip(in.EngineVersion, 32), OSTarget: clip(in.OS, 32),
 	}, plan.EnvLimit)
 	switch {
