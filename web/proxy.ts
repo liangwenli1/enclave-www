@@ -6,6 +6,13 @@ import { isLocale, localeFromLanguage, localeFromPath } from "@/lib/i18n/locale"
  * 账号接口和页面同源（Caddy 把 /api/* 反代给账号服务），所以 connect-src 只要 'self'。
  */
 export function proxy(request: NextRequest) {
+  // Next.js may run the proxy again for the internal, locale-stripped rewrite.
+  // Let that second pass render the route instead of redirecting it back to the
+  // public locale URL and creating a redirect loop.
+  if (request.headers.get("x-enclave-internal-rewrite") === "1") {
+    return NextResponse.next();
+  }
+
   const { pathname } = request.nextUrl;
   const pathLocale = localeFromPath(pathname);
   const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value.toLowerCase();
@@ -35,6 +42,7 @@ export function proxy(request: NextRequest) {
   const headers = new Headers(request.headers);
   headers.set("x-nonce", nonce);
   headers.set("x-enclave-locale", locale);
+  headers.set("x-enclave-internal-rewrite", "1");
   headers.set("Content-Security-Policy", csp);
   const url = request.nextUrl.clone();
   url.pathname = pathname.slice(pathLocale.length + 1) || "/";
