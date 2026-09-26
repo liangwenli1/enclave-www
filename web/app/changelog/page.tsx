@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
 import { PageHead } from "@/components/page-head";
-import { CHANGELOG } from "@/lib/changelog";
+import { CHANGELOG, CHANGELOG_EN } from "@/lib/changelog";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
 
-export const metadata: Metadata = {
-  title: "更新日志",
-  description: "Enclave 各版本带来的变化。",
-  alternates: { canonical: "/changelog" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const english = (await getRequestLocale()) === "en";
+  return { title: english ? "Changelog" : "更新日志", description: english ? "Product changes in each Enclave release." : "Enclave 各版本的产品更新。", alternates: { canonical: english ? "/en/changelog" : "/zh-cn/changelog" } };
+}
 
-export default function ChangelogPage() {
+export default async function ChangelogPage() {
+  const english = (await getRequestLocale()) === "en";
+  const entries = english ? CHANGELOG_EN : CHANGELOG;
   return (
     <main>
-      <PageHead eyebrow="更新日志" title="新版本带来了什么" />
+      <PageHead eyebrow={english ? "Changelog" : "更新日志"} title={english ? "Product updates" : "产品更新"} />
       <section className="py-14 sm:py-16">
         <div className="site-wrap grid gap-14">
-          {CHANGELOG.map((e) => (
+          {entries.map((e) => (
             <article key={e.version} className="grid gap-4 md:grid-cols-[200px_1fr] md:gap-10">
               <div>
                 <p className="font-mono text-[22px] font-medium">{e.version}</p>

@@ -1,13 +1,24 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/locale-link";
 import { LegalPage } from "@/components/legal";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
 
-export const metadata: Metadata = {
-  title: "退款政策",
-  alternates: { canonical: "/refund" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const english = (await getRequestLocale()) === "en";
+  return { title: english ? "Refund Policy" : "退款政策", alternates: { canonical: english ? "/en/refund" : "/zh-cn/refund" } };
+}
 
-export default function RefundPage() {
+export default async function RefundPage() {
+  const english = (await getRequestLocale()) === "en";
+  if (english) return (
+    <LegalPage title="Refund Policy" updated="2026-09-24">
+      <p>The free plan is available without a payment method. Use it to evaluate Enclave before starting a paid subscription.</p>
+      <h2>First subscription</h2><p>A full refund may be requested within seven days of the first subscription to a paid plan. The account returns to the free plan after the refund.</p>
+      <h2>Renewals</h2><p>Automatic renewal charges are non-refundable. Subscriptions can be cancelled at any time and remain active through the current billing period.</p>
+      <h2>Service disruption</h2><p>When an Enclave service failure causes an extended loss of access, refund requests are assessed according to the duration and impact of the disruption.</p>
+      <h2>Request a refund</h2><p>Use the <Link href="/contact">contact form</Link> and include the account email and plan. Approved refunds return to the original payment method; processing time depends on the payment provider.</p>
+    </LegalPage>
+  );
   return (
     <LegalPage title="退款政策" updated="2026-09-24">
       <p>免费档永久可用，不需要绑卡。建议先用免费档确认 Enclave 是否适合，再订阅付费档。</p>

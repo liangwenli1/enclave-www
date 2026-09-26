@@ -1,22 +1,22 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/locale-link";
 import { usePathname } from "next/navigation";
 import { cn } from "cn";
 
 export type NavGroup = { group: string; items: { slug: string; title: string }[] };
 
 /** 文档侧栏。宽屏常驻左侧；窄屏收成页面顶部的一个可展开列表。 */
-export function DocsNav({ groups }: { groups: NavGroup[] }) {
+export function DocsNav({ groups, english }: { groups: NavGroup[]; english: boolean }) {
   const pathname = usePathname();
   const list = (
-    <nav aria-label="文档目录" className="grid gap-6 text-[14.5px]">
+    <nav aria-label={english ? "Documentation navigation" : "文档目录"} className="grid gap-6 text-[14.5px]">
       <Link
         href="/docs"
-        aria-current={pathname === "/docs" ? "page" : undefined}
-        className={cn("-mx-3 rounded-lg px-3 py-1.5", pathname === "/docs" ? "bg-accent font-medium text-foreground" : "text-body hover:text-foreground")}
+        aria-current={pathname.endsWith("/docs") ? "page" : undefined}
+        className={cn("-mx-3 rounded-lg px-3 py-1.5", pathname.endsWith("/docs") ? "bg-accent font-medium text-foreground" : "text-body hover:text-foreground")}
       >
-        文档首页
+        {english ? "Documentation home" : "文档首页"}
       </Link>
       {groups.map((g) => (
         <div key={g.group}>
@@ -24,7 +24,7 @@ export function DocsNav({ groups }: { groups: NavGroup[] }) {
           <ul className="mt-2 grid gap-0.5">
             {g.items.map((d) => {
               const href = `/docs/${d.slug}`;
-              const active = pathname === href;
+              const active = pathname.endsWith(href);
               return (
                 <li key={d.slug}>
                   <Link
@@ -50,7 +50,7 @@ export function DocsNav({ groups }: { groups: NavGroup[] }) {
     <>
       <details className="group rounded-xl border border-border lg:hidden">
         <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-[15px] font-medium [&::-webkit-details-marker]:hidden">
-          文档目录
+          {english ? "Documentation" : "文档目录"}
           <span className="text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true">
             ▾
           </span>

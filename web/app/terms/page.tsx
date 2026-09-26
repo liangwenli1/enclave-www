@@ -1,13 +1,30 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/locale-link";
 import { LegalPage } from "@/components/legal";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
 
-export const metadata: Metadata = {
-  title: "服务条款",
-  alternates: { canonical: "/terms" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const english = (await getRequestLocale()) === "en";
+  return { title: english ? "Terms of Service" : "服务条款", alternates: { canonical: english ? "/en/terms" : "/zh-cn/terms" } };
+}
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const english = (await getRequestLocale()) === "en";
+  if (english) return (
+    <LegalPage title="Terms of Service" updated="2026-09-24">
+      <p>These terms apply to the Enclave desktop application and the account services provided through tapzm.com (together, the “Service”). Creating an account or using the Service means accepting these terms.</p>
+      <h2>1. Service</h2><p>The Service includes the on-device multi-environment browser workspace and online account, entitlement, device, team, and encrypted-sync features. Browser environments run on the user&apos;s device.</p>
+      <h2>2. Accounts</h2><ul><li>Registration requires a working email address. Account holders are responsible for securing their credentials and for activity under their account.</li><li>Team owners are responsible for the members they invite.</li><li>Device, environment, and concurrency limits follow the selected plan.</li></ul>
+      <h2>3. Acceptable use</h2><p>The Service must be used in compliance with applicable law. It may not be used for fraud, account theft, unauthorized system access, malware distribution, or other unlawful activity.</p><p>Third-party sites set their own terms. Users remain responsible for complying with those terms and for activity performed through their accounts. The Service does not guarantee that an account will avoid restrictions.</p>
+      <h2>4. Subscriptions and payment</h2><ul><li>Paid plans renew monthly at the prices shown on the <Link href="/pricing">pricing page</Link>. Creem processes payments.</li><li>Subscriptions may be cancelled from the account page. Access continues through the current billing period, then returns to the free plan.</li><li>See the <Link href="/refund">Refund Policy</Link> for eligibility.</li></ul>
+      <h2>5. Availability</h2><p>Creating or starting an environment requires a connection to verify entitlement. Existing browser sessions continue during maintenance or a network interruption, but new environments cannot be created or started. Continuous availability is not guaranteed.</p>
+      <h2>6. Data</h2><p>Environment data is stored on the user&apos;s device and should be backed up as appropriate. See the <Link href="/privacy">Privacy Policy</Link> for account-service data.</p>
+      <h2>7. Limitation of liability</h2><p>To the extent permitted by law, the Service is provided as is. Enclave is not liable for indirect losses arising from use or inability to use the Service. Aggregate liability is limited to fees paid by the account during the previous 12 months.</p>
+      <h2>8. Suspension and termination</h2><p>Accounts that violate these terms may be suspended or terminated. Users may stop using the Service at any time.</p>
+      <h2>9. Changes</h2><p>Changes are published on this page with an updated date. Material changes affecting paid-plan benefits will be announced in advance.</p>
+      <h2>10. Contact</h2><p>Questions may be submitted through the <Link href="/contact">contact form</Link>.</p>
+    </LegalPage>
+  );
   return (
     <LegalPage title="服务条款" updated="2026-09-24">
       <p>

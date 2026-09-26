@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { cn } from "cn";
 import { Glyph } from "@/components/brand";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
 
 /*
  * 「为什么会被关联」的示意图。HTML 画的，窄屏也清楚：
@@ -26,10 +27,11 @@ function Lines({ converge }: { converge: boolean }) {
   );
 }
 
-function Accounts() {
+function Accounts({ english }: { english: boolean }) {
+  const accounts = english ? ["Store A", "Store B", "Store C"] : ACCOUNTS;
   return (
     <div className="grid grid-cols-3 gap-2 sm:gap-3">
-      {ACCOUNTS.map((a) => (
+      {accounts.map((a) => (
         <div key={a} className="rounded-lg border border-border bg-card px-2 py-2.5 text-center text-[13.5px] font-medium">
           {a}
         </div>
@@ -67,41 +69,43 @@ function Panel({
   );
 }
 
-export function Linkage() {
+export async function Linkage() {
+  const english = (await getRequestLocale()) === "en";
   return (
     <section className="py-24 sm:py-28">
       <div className="site-wrap">
         <div className="max-w-[40em]">
-          <p className="eyebrow">账号为什么会被关联</p>
-          <h2 className="display-3 mt-3">同一台电脑上的账号，平台一眼就能认出来</h2>
+          <p className="eyebrow">{english ? "Why accounts get linked" : "关联风险"}</p>
+          <h2 className="display-3 mt-3">{english ? "Shared browser signals can link separate accounts" : "共享浏览器信号可能导致账号关联"}</h2>
           <p className="lead mt-5">
-            浏览器指纹、Cookie、IP 地址，只要有一项重合，几个账号就会被归到同一个人名下。Enclave
-            把三项全部分开，每个环境都像一台单独的电脑。
+            {english
+              ? "Browser fingerprints, cookies, and IP addresses can connect accounts that should remain separate. Enclave isolates all three in independent environments."
+              : "浏览器指纹、Cookie、IP 地址出现重合时，多个账号可能被归为同一使用者。Enclave 将三项分别隔离，让每个环境保持独立。"}
           </p>
         </div>
 
         <div className="mt-12 grid gap-5 lg:grid-cols-2 lg:gap-6">
-          <Panel title="普通浏览器" verdict="被判定为同一人" good={false}>
-            <Accounts />
+          <Panel title={english ? "Standard browser" : "普通浏览器"} verdict={english ? "Accounts may be linked" : "账号可能被关联"} good={false}>
+            <Accounts english={english} />
             <div className="text-[#d7a39c]">
               <Lines converge />
             </div>
             <div className="mx-auto max-w-[300px] rounded-xl border border-dashed border-[#e3b5ae] bg-card px-4 py-3.5 text-center">
-              <p className="text-[14px] font-semibold">同一个指纹 · 同一个 IP</p>
-              <p className="mt-0.5 text-[13px] text-muted-foreground">Cookie 与缓存互相可见</p>
+              <p className="text-[14px] font-semibold">{english ? "Shared fingerprint and IP" : "相同的指纹与 IP"}</p>
+              <p className="mt-0.5 text-[13px] text-muted-foreground">{english ? "Cookies and cache share the same browser context" : "Cookie 与缓存处于同一浏览器上下文"}</p>
             </div>
           </Panel>
 
-          <Panel title="Enclave" verdict="三台互不相关的电脑" good>
-            <Accounts />
+          <Panel title="Enclave" verdict={english ? "Three independent environments" : "三个独立环境"} good>
+            <Accounts english={english} />
             <div className="text-primary/45">
               <Lines converge={false} />
             </div>
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {[
-                [7101, "洛杉矶", "en-US"],
-                [4402, "柏林", "de-DE"],
-                [9312, "东京", "ja-JP"],
+                [7101, english ? "Los Angeles" : "洛杉矶", "en-US"],
+                [4402, english ? "Berlin" : "柏林", "de-DE"],
+                [9312, english ? "Tokyo" : "东京", "ja-JP"],
               ].map(([seed, city, lang]) => (
                 <div key={city} className="grid justify-items-center gap-1.5 rounded-xl border border-border bg-card px-2 py-3 text-center">
                   <Glyph seed={seed as number} className="size-7" />

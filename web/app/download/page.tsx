@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/locale-link";
 import { ArrowRight } from "lucide-react";
 import { PageHead } from "@/components/page-head";
 import { PlatformPicker } from "@/components/platform-picker";
 import { RELEASE } from "@/lib/release";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
 
-export const metadata: Metadata = {
-  title: "下载",
-  description: "下载 Enclave 工作台：Windows 10 / 11 与 macOS（Apple Silicon）安装包，附 SHA256 校验值。免费 3 个环境，无需绑卡。",
-  alternates: { canonical: "/download" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const english = (await getRequestLocale()) === "en";
+  return {
+    title: english ? "Download" : "下载",
+    description: english ? "Download Enclave for Windows 10/11 or macOS on Apple Silicon, with published SHA256 checksums." : "下载适用于 Windows 10/11 与 macOS（Apple Silicon）的 Enclave 工作台，并核对 SHA256。",
+    alternates: { canonical: english ? "/en/download" : "/zh-cn/download", languages: { en: "/en/download", "zh-CN": "/zh-cn/download", "x-default": "/en/download" } },
+  };
+}
 
 const STEPS = {
   windows: [
@@ -24,25 +28,40 @@ const STEPS = {
   ],
 };
 
-export default function DownloadPage() {
+const STEPS_EN = {
+  windows: [
+    "Run the downloaded .msi installer and follow the setup instructions.",
+    "The installer is not yet code-signed. If Windows SmartScreen appears, select “More info”, then “Run anyway”.",
+    "Open Enclave, select “Sign in”, and confirm the request in the browser.",
+  ],
+  macos: [
+    "Open the downloaded .dmg and drag Enclave into Applications.",
+    "The installer is not yet notarized by Apple. Before the first launch, run the command below in Terminal.",
+    "Open Enclave, select “Sign in”, and confirm the request in the browser.",
+  ],
+};
+
+export default async function DownloadPage() {
+  const english = (await getRequestLocale()) === "en";
+  const steps = english ? STEPS_EN : STEPS;
   return (
     <main>
       <PageHead
-        eyebrow="下载"
-        title="下载 Enclave"
+        eyebrow={english ? "Download" : "下载"}
+        title={english ? "Download Enclave" : "下载 Enclave"}
         lead={
           RELEASE ? (
             <>
-              当前版本 <span className="font-mono">{RELEASE.version}</span>，发布于 {RELEASE.date}。免费 3 个环境，无需绑卡。
+              {english ? "Current version" : "当前版本"} <span className="font-mono">{RELEASE.version}</span>{english ? `, released ${RELEASE.date}. 3 environments free, no card required.` : `，发布于 ${RELEASE.date}。免费 3 个环境，无需绑卡。`}
             </>
           ) : (
-            "Windows 与 macOS 安装包即将开放下载。现在可以先注册账号，发布后装好即可登录使用。"
+            english ? "Windows and macOS installers will be available here." : "Windows 与 macOS 安装包即将开放下载。"
           )
         }
       >
         {RELEASE ? null : (
           <Link href="/account#register" className="mt-7 inline-flex items-center gap-1.5 font-medium text-link hover:underline hover:underline-offset-4">
-            先注册账号
+            {english ? "Create an account" : "注册账号"}
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
         )}
@@ -57,9 +76,9 @@ export default function DownloadPage() {
       <section className="border-t border-border py-20">
         <div className="site-wrap grid gap-12 lg:grid-cols-2">
           <div>
-            <h2 className="text-[22px] font-semibold tracking-[-0.01em]">在 Windows 上安装</h2>
+            <h2 className="text-[22px] font-semibold tracking-[-0.01em]">{english ? "Install on Windows" : "在 Windows 上安装"}</h2>
             <ol className="mt-5 grid gap-4">
-              {STEPS.windows.map((s, i) => (
+              {steps.windows.map((s, i) => (
                 <li key={s} className="grid grid-cols-[28px_1fr] gap-3 text-body">
                   <span className="grid size-7 place-items-center rounded-full bg-muted font-mono text-[13px] text-foreground">{i + 1}</span>
                   <span className="pt-0.5">{s}</span>
@@ -68,9 +87,9 @@ export default function DownloadPage() {
             </ol>
           </div>
           <div>
-            <h2 className="text-[22px] font-semibold tracking-[-0.01em]">在 macOS 上安装</h2>
+            <h2 className="text-[22px] font-semibold tracking-[-0.01em]">{english ? "Install on macOS" : "在 macOS 上安装"}</h2>
             <ol className="mt-5 grid gap-4">
-              {STEPS.macos.map((s, i) => (
+              {steps.macos.map((s, i) => (
                 <li key={s} className="grid grid-cols-[28px_1fr] gap-3 text-body">
                   <span className="grid size-7 place-items-center rounded-full bg-muted font-mono text-[13px] text-foreground">{i + 1}</span>
                   <span className="pt-0.5">
@@ -91,20 +110,20 @@ export default function DownloadPage() {
       <section className="border-t border-border bg-muted py-20">
         <div className="site-wrap grid gap-10 lg:grid-cols-[1fr_1.4fr]">
           <div>
-            <h2 className="text-[22px] font-semibold tracking-[-0.01em]">核对安装包</h2>
+            <h2 className="text-[22px] font-semibold tracking-[-0.01em]">{english ? "Verify the installer" : "核对安装包"}</h2>
             <p className="mt-3 text-body">
-              下载后算一次 SHA256，与上方公布的值一致，说明文件完整且未被替换。内核文件由工作台在启动前自动校验，无需手动核对。
+              {english ? "Calculate the SHA256 checksum after download and compare it with the published value. Enclave verifies kernel files automatically before launch." : "下载后计算 SHA256，并与页面公布的值核对。工作台会在启动前自动校验内核文件。"}
             </p>
           </div>
           <div className="grid gap-4">
             <div>
-              <p className="text-[13px] font-medium text-muted-foreground">Windows（PowerShell）</p>
+              <p className="text-[13px] font-medium text-muted-foreground">{english ? "Windows (PowerShell)" : "Windows（PowerShell）"}</p>
               <code className="mt-1.5 block rounded-lg bg-navy px-4 py-3 font-mono text-[13px] break-all text-navy-foreground">
                 Get-FileHash .\Enclave_*.msi -Algorithm SHA256
               </code>
             </div>
             <div>
-              <p className="text-[13px] font-medium text-muted-foreground">macOS（终端）</p>
+              <p className="text-[13px] font-medium text-muted-foreground">{english ? "macOS (Terminal)" : "macOS（终端）"}</p>
               <code className="mt-1.5 block rounded-lg bg-navy px-4 py-3 font-mono text-[13px] break-all text-navy-foreground">
                 shasum -a 256 ~/Downloads/Enclave_*.dmg
               </code>
@@ -115,9 +134,9 @@ export default function DownloadPage() {
 
       <section className="py-16">
         <div className="site-wrap flex flex-wrap items-center justify-between gap-6">
-          <p className="text-body">首次使用某个内核版本时，工作台会自动下载，并按官方签名的清单校验文件。</p>
+          <p className="text-body">{english ? "When an engine version is used for the first time, Enclave downloads it and verifies it against the signed manifest." : "首次使用某个内核版本时，工作台会自动下载并根据签名清单校验文件。"}</p>
           <Link href="/changelog" className="inline-flex items-center gap-1.5 font-medium text-link hover:underline hover:underline-offset-4">
-            更新日志
+            {english ? "Changelog" : "更新日志"}
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
         </div>

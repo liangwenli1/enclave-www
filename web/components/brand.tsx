@@ -1,5 +1,8 @@
-import Link from "next/link";
+"use client";
+
+import { LocaleLink as Link } from "@/components/locale-link";
 import { cn } from "cn";
+import { useLocale } from "@/components/locale-provider";
 import { ridges } from "@/lib/glyph";
 
 // 标志就是一枚指纹章：和工作台里每个环境名前面那枚是同一个算法，种子固定。
@@ -14,10 +17,11 @@ export function BrandMark({ className }: { className?: string }) {
 }
 
 export function Brand({ className }: { className?: string }) {
+  const english = useLocale() === "en";
   return (
     <Link
       href="/"
-      aria-label="Enclave 首页"
+      aria-label={english ? "Enclave home" : "Enclave 首页"}
       className={cn("flex w-fit items-center gap-2.5 text-[17px] font-semibold tracking-[-0.01em] text-foreground", className)}
     >
       <BrandMark />

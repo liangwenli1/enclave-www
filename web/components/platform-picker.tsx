@@ -7,10 +7,11 @@ import { CopyButton } from "@/components/copy-button";
 import { buttonVariants } from "@/components/ui/button";
 import type { Platform, Release } from "@/lib/release";
 import { downloadUrl, fileFor, megabytes } from "@/lib/release";
+import { useLocale } from "@/components/locale-provider";
 
-const PLATFORMS: { key: Platform; name: string; req: string; ext: string }[] = [
-  { key: "windows", name: "Windows", req: "Windows 10 / 11，64 位", ext: ".msi" },
-  { key: "macos", name: "macOS", req: "Apple Silicon（M 系列芯片）", ext: ".dmg" },
+const PLATFORMS: { key: Platform; name: string; req: string; reqEn: string; ext: string }[] = [
+  { key: "windows", name: "Windows", req: "Windows 10 / 11，64 位", reqEn: "Windows 10 / 11, 64-bit", ext: ".msi" },
+  { key: "macos", name: "macOS", req: "Apple Silicon（M 系列芯片）", reqEn: "Apple silicon (M-series)", ext: ".dmg" },
 ];
 
 const noop = () => () => {};
@@ -25,6 +26,7 @@ const detect = (): Platform | null => {
 export function PlatformPicker({ release }: { release: Release | null }) {
   // 只能在浏览器里认系统；服务器渲染时按 Windows 在前处理，水合后再换成真实系统。
   const mine = useSyncExternalStore(noop, detect, () => null);
+  const english = useLocale() === "en";
 
   return (
     <div className="grid gap-5 md:grid-cols-2">
@@ -35,23 +37,23 @@ export function PlatformPicker({ release }: { release: Release | null }) {
           <div key={p.key} className={cn("flex flex-col rounded-2xl border bg-card p-6 sm:p-8", primary ? "border-primary/30 shadow-frame" : "border-border")}>
             <div className="flex items-baseline justify-between gap-3">
               <h2 className="text-[24px] font-semibold tracking-[-0.01em]">{p.name}</h2>
-              {mine === p.key ? <span className="text-[12.5px] font-medium text-primary">当前系统</span> : null}
+              {mine === p.key ? <span className="text-[12.5px] font-medium text-primary">{english ? "Current system" : "当前系统"}</span> : null}
             </div>
-            <p className="mt-1 text-[14px] text-muted-foreground">{p.req}</p>
+            <p className="mt-1 text-[14px] text-muted-foreground">{english ? p.reqEn : p.req}</p>
 
             {release && file ? (
               <>
                 <dl className="mt-6 grid gap-2 text-[14px]">
                   <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">版本</dt>
+                    <dt className="text-muted-foreground">{english ? "Version" : "版本"}</dt>
                     <dd className="font-mono">{release.version}</dd>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">文件</dt>
+                    <dt className="text-muted-foreground">{english ? "File" : "文件"}</dt>
                     <dd className="truncate font-mono text-[13px]">{file.name}</dd>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">大小</dt>
+                    <dt className="text-muted-foreground">{english ? "Size" : "大小"}</dt>
                     <dd className="font-mono">{megabytes(file.bytes)}</dd>
                   </div>
                 </dl>
@@ -67,19 +69,19 @@ export function PlatformPicker({ release }: { release: Release | null }) {
                   className={cn(buttonVariants({ size: "lg", variant: primary ? "default" : "outline" }), "mt-6 w-full")}
                 >
                   <Download aria-hidden="true" />
-                  下载 {p.ext} 安装包
+                  {english ? `Download ${p.ext} installer` : `下载 ${p.ext} 安装包`}
                 </a>
               </>
             ) : (
               <div className="mt-6 flex flex-1 flex-col justify-end">
                 <p className="rounded-lg bg-muted p-4 text-[14px] leading-relaxed text-body">
-                  安装包即将开放下载。发布后，这里直接提供文件、大小与 SHA256 校验值。
+                  {english ? "Installers will be available here with file size and SHA256 checksum." : "安装包即将开放下载。发布后，这里将提供文件、大小与 SHA256 校验值。"}
                 </p>
                 <span
                   aria-disabled="true"
                   className="mt-6 inline-flex h-12 w-full cursor-not-allowed items-center justify-center rounded-full border border-dashed border-input text-base font-medium text-muted-foreground"
                 >
-                  即将开放
+                  {english ? "Coming soon" : "即将开放"}
                 </span>
               </div>
             )}

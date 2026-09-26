@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/locale-link";
 
 /*
  * 文档。每一篇写的都是现在的行为（出处：enclave 仓库 docs/enclave-final-delivery.md）；

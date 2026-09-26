@@ -1,11 +1,12 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/locale-link";
 import { useEffect, useState } from "react";
 import { cn } from "cn";
 import { buttonVariants } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import type { PlanId } from "@/lib/plans";
+import { useLocale } from "@/components/locale-provider";
 
 /*
  * 付费档的按钮：支付通道配好、这一档填了产品 ID，才显示「订阅」；否则显示「暂未开通」。
@@ -33,10 +34,11 @@ export function useOnlinePlans() {
 
 export function PlanAction({ plan, name, featured }: { plan: PlanId; name: string; featured: boolean }) {
   const plans = useOnlinePlans();
+  const english = useLocale() === "en";
 
   if (plans === null) {
     // 还没问到：先占住按钮的位置，不闪「暂未开通」也不闪「订阅」。
-    return <span aria-hidden="true" className={cn(buttonVariants(), "invisible w-full")}>订阅</span>;
+    return <span aria-hidden="true" className={cn(buttonVariants(), "invisible w-full")}>{english ? "Subscribe" : "订阅"}</span>;
   }
   if (!plans.includes(plan)) {
     return (
@@ -44,10 +46,10 @@ export function PlanAction({ plan, name, featured }: { plan: PlanId; name: strin
         aria-disabled="true"
         className={cn(
           "inline-flex h-10 w-full cursor-not-allowed items-center justify-center rounded-full border border-dashed text-[14.5px] font-medium",
-          featured ? "border-navy-border text-navy-muted" : "border-input text-muted-foreground",
+          "border-input text-muted-foreground",
         )}
       >
-        暂未开通
+        {english ? "Not available" : "暂未开通"}
       </span>
     );
   }
@@ -56,7 +58,7 @@ export function PlanAction({ plan, name, featured }: { plan: PlanId; name: strin
       href={`/account?plan=${plan}#upgrade`}
       className={cn(buttonVariants({ variant: featured ? "default" : "outline" }), "w-full")}
     >
-      订阅 {name}
+      {english ? `Subscribe to ${name}` : `订阅 ${name}`}
     </Link>
   );
 }
@@ -64,14 +66,15 @@ export function PlanAction({ plan, name, featured }: { plan: PlanId; name: strin
 /** 在线订阅还没开通时，给一条路：联系开通。开通之后这句话自动消失。 */
 export function OfflineNote({ className }: { className?: string }) {
   const plans = useOnlinePlans();
+  const english = useLocale() === "en";
   if (plans === null || plans.length > 0) return null;
   return (
     <p className={cn("text-[13.5px] text-muted-foreground", className)}>
-      在线订阅即将开放。现在需要付费档，可以
+      {english ? "Online subscriptions are not available yet. " : "在线订阅即将开放。现在需要付费档，可以"}
       <Link href="/contact" className="mx-0.5 text-link hover:underline hover:underline-offset-4">
-        联系我们
+        {english ? "Contact us" : "联系我们"}
       </Link>
-      开通。
+      {english ? " for access." : "开通。"}
     </p>
   );
 }

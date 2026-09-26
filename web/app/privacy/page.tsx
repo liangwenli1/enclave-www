@@ -1,13 +1,40 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/locale-link";
 import { LegalPage } from "@/components/legal";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
 
-export const metadata: Metadata = {
-  title: "隐私政策",
-  alternates: { canonical: "/privacy" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const english = (await getRequestLocale()) === "en";
+  return { title: english ? "Privacy Policy" : "隐私政策", alternates: { canonical: english ? "/en/privacy" : "/zh-cn/privacy" } };
+}
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const english = (await getRequestLocale()) === "en";
+  if (english) return (
+    <LegalPage title="Privacy Policy" updated="2026-09-24">
+      <p>Enclave browser environments run on the device. This policy explains which data the account service stores and why. Browsing activity inside an environment is not included.</p>
+      <h2>Data stored by the service</h2>
+      <div className="table-scroll"><table><thead><tr><th>Data</th><th>Purpose</th></tr></thead><tbody>
+        <tr><td>Email and password hash</td><td>Authentication. Plain-text passwords are never stored.</td></tr>
+        <tr><td>Signed-in device name, ID, and last-seen time</td><td>Enforce device limits and support remote unlinking.</td></tr>
+        <tr><td>Environment ID, name, engine version, and folder</td><td>Enforce plan limits and grant team access by folder.</td></tr>
+        <tr><td>Activity action, actor, device, IP address, and time</td><td>Provide a 90-day activity log to owners and administrators.</td></tr>
+        <tr><td>Synced environment, proxy, and session data</td><td>Stored only after on-device encryption. The server cannot decrypt it.</td></tr>
+        <tr><td>Subscription status and checkout customer ID</td><td>Activate and renew paid plans. Creem processes payment details.</td></tr>
+        <tr><td>Contact email and message</td><td>Respond to support requests.</td></tr>
+        <tr><td>IP address</td><td>Rate-limit sign-in attempts and prevent abuse.</td></tr>
+      </tbody></table></div>
+      <h2>Data the service does not store</h2>
+      <p>The pages visited and actions taken inside an environment, or plain-text cookies, proxy passwords, and fingerprint profiles. When sync is enabled, supported data exists on the server only as ciphertext.</p>
+      <h2>Service providers</h2>
+      <ul><li>Creem processes subscription payments.</li><li>Object-storage providers store encrypted session data.</li><li>Email providers deliver team invitations and service messages.</li></ul>
+      <p>Enclave does not sell personal data or use it for advertising.</p>
+      <h2>Cookies</h2><p>The website uses only cookies required for authentication and session security. It does not use analytics or advertising cookies.</p>
+      <h2>Access, correction, and deletion</h2>
+      <p>Use the <Link href="/contact">contact form</Link> from the account email address to request access, correction, or deletion. Activity logs are removed automatically after the retention period.</p>
+      <h2>Changes</h2><p>Policy changes are published on this page with an updated effective date.</p>
+    </LegalPage>
+  );
   return (
     <LegalPage title="隐私政策" updated="2026-09-24">
       <p>

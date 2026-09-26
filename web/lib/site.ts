@@ -9,8 +9,8 @@ export const SITE = {
 
 /** 顶栏与页脚共用的导航。 */
 export const NAV = [
-  { href: "/#product", label: "产品" },
-  { href: "/pricing", label: "套餐" },
-  { href: "/docs", label: "文档" },
-  { href: "/download", label: "下载" },
+  { href: "/#product", key: "product" },
+  { href: "/pricing", key: "pricing" },
+  { href: "/docs", key: "docs" },
+  { href: "/download", key: "download" },
 ] as const;

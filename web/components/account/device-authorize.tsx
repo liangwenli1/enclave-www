@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AuthForm, type AuthMode } from "@/components/account/auth-form";
 import { Centered } from "@/components/account/centered";
+import { useLocale } from "@/components/locale-provider";
 import { CodeValue } from "@/components/copy-button";
 import { ErrorText, KeyValues, Muted } from "@/components/panel";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ export function DeviceAuthorize({
   deviceId: string;
   deviceName: string;
 }) {
+  const english = useLocale() === "en";
   const valid = /^[A-Za-z0-9_-]{43}$/.test(challenge);
   const [view, setView] = useState<View>(valid ? { kind: "loading" } : { kind: "invalid" });
   const [error, setError] = useState("");
@@ -64,16 +66,16 @@ export function DeviceAuthorize({
     setBusy(false);
   };
 
-  const device = deviceName || "这台电脑";
+  const device = deviceName || (english ? "This device" : "这台设备");
 
   return (
     <Centered
-      title="登录工作台"
-      lead={view.kind === "done" ? "已允许，正在回到工作台。" : `「${device}」上的 Enclave 工作台请求登录当前账号。`}
+      title={english ? "Sign in to the desktop app" : "登录工作台"}
+      lead={view.kind === "done" ? (english ? "Approved. Returning to the desktop app." : "授权已完成，正在返回工作台。") : (english ? `Enclave on “${device}” is requesting access to this account.` : `设备「${device}」上的 Enclave 工作台正在请求登录当前账号。`)}
     >
-      {view.kind === "loading" && !error ? <Muted>读取中…</Muted> : null}
+      {view.kind === "loading" && !error ? <Muted>{english ? "Loading…" : "正在读取…"}</Muted> : null}
 
-      {view.kind === "invalid" ? <p className="text-body">这个链接不完整。回到工作台，重新点一次「登录」。</p> : null}
+      {view.kind === "invalid" ? <p className="text-body">{english ? "This link is incomplete. Return to the desktop app and select Sign in again." : "链接不完整。请返回工作台并重新选择「登录」。"}</p> : null}
 
       {view.kind === "auth" ? (
         <AuthForm mode={view.mode} onMode={(mode) => setView({ kind: "auth", mode })} onDone={async () => setView(await whoAmI())} />
@@ -83,19 +85,19 @@ export function DeviceAuthorize({
         <>
           <KeyValues
             rows={[
-              ["账号", view.email],
-              ["电脑", device],
+              [english ? "Account" : "账号", view.email],
+              [english ? "Device" : "设备", device],
             ]}
           />
           <Muted>
-            仅在刚刚于工作台中点过「登录」时才允许。允许后这台电脑占用账号的一个设备名额，可随时在账号页解绑。
+            {english ? "Approve only if you just selected Sign in in the desktop app. This device will use one device slot and can be unlinked from the account page." : "仅在刚刚于工作台中选择「登录」时批准。批准后，该设备将占用一个设备名额，可随时在账号页解绑。"}
           </Muted>
           <div className="flex flex-wrap gap-3">
             <Button size="lg" disabled={busy} onClick={() => void allow()}>
-              {busy ? "处理中…" : "允许登录"}
+              {busy ? (english ? "Working…" : "处理中…") : (english ? "Approve" : "允许登录")}
             </Button>
             <Button size="lg" variant="outline" disabled={busy} onClick={() => setView({ kind: "declined" })}>
-              不是本人操作
+              {english ? "Deny" : "拒绝"}
             </Button>
           </div>
         </>
@@ -104,17 +106,17 @@ export function DeviceAuthorize({
       {view.kind === "done" ? (
         <>
           <p className="text-body">
-            浏览器会询问是否打开 Enclave，选「打开」。工作台没有反应时，把下面的授权码粘贴到工作台的登录页：2 分钟内有效，只能用一次。
+            {english ? "Allow the browser to open Enclave. If the desktop app does not respond, paste the authorization code below into its sign-in screen. The code is valid for two minutes and can be used once." : "浏览器将请求打开 Enclave。若工作台没有响应，请将下方授权码粘贴到工作台登录页。授权码有效期为 2 分钟，且仅可使用一次。"}
           </p>
-          <CodeValue label="授权码" value={new URL(view.redirect).searchParams.get("code") ?? ""} />
+          <CodeValue label={english ? "Authorization code" : "授权码"} value={new URL(view.redirect).searchParams.get("code") ?? ""} />
           <a className="w-fit text-[14.5px] text-link hover:underline" href={view.redirect}>
-            再试一次打开工作台
+            {english ? "Open Enclave again" : "重新打开工作台"}
           </a>
         </>
       ) : null}
 
       {view.kind === "declined" ? (
-        <p className="text-body">没有登录任何电脑，可以关闭此页。若从未在工作台点过「登录」却被引导到这里，请勿允许。</p>
+        <p className="text-body">{english ? "No device was authorized. You may close this page. If you did not start this request from Enclave, do not approve it." : "未授权任何设备，可以关闭此页。如未在工作台发起登录，请勿批准该请求。"}</p>
       ) : null}
 
       {error ? <ErrorText>{error}</ErrorText> : null}

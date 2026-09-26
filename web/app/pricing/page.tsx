@@ -6,12 +6,16 @@ import { PageHead } from "@/components/page-head";
 import { PlanCards } from "@/components/plan-cards";
 import { OfflineNote } from "@/components/plan-action";
 import { API_LABEL, FEATURED, PLANS, type SitePlan } from "@/lib/plans";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
 
-export const metadata: Metadata = {
-  title: "套餐与价格",
-  description: "免费档 3 个环境永久可用；Solo $9、Pro $29、Team $79 每月，按环境数付费，安装包免费，随时取消。",
-  alternates: { canonical: "/pricing" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const english = (await getRequestLocale()) === "en";
+  return {
+    title: english ? "Pricing" : "套餐与价格",
+    description: english ? "Compare Enclave plans by environment capacity, concurrency, devices, team seats, encrypted sync, and local API access." : "按环境数量、并发、设备、成员席位、加密同步与本机 API 对比 Enclave 套餐。",
+    alternates: { canonical: english ? "/en/pricing" : "/zh-cn/pricing", languages: { en: "/en/pricing", "zh-CN": "/zh-cn/pricing", "x-default": "/en/pricing" } },
+  };
+}
 
 type Value = string | boolean;
 const GROUPS: { title: string; rows: [string, (p: SitePlan) => Value][] }[] = [
@@ -48,9 +52,9 @@ const GROUPS: { title: string; rows: [string, (p: SitePlan) => Value][] }[] = [
   },
 ];
 
-function Cell({ value }: { value: Value }) {
-  if (value === true) return <Check className="mx-auto size-[18px] text-primary" aria-label="包含" />;
-  if (value === false) return <Minus className="mx-auto size-4 text-input" aria-label="不包含" />;
+function Cell({ value, english }: { value: Value; english: boolean }) {
+  if (value === true) return <Check className="mx-auto size-[18px] text-primary" aria-label={english ? "Included" : "包含"} />;
+  if (value === false) return <Minus className="mx-auto size-4 text-input" aria-label={english ? "Not included" : "不包含"} />;
   return <span className="tnum">{value}</span>;
 }
 
@@ -68,13 +72,31 @@ const BILLING_FAQ: [string, string][] = [
   ["可以不在线付款吗？", "可以。通过联系我们说明需要的档位与时长，确认收款后为账号开通。"],
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const english = (await getRequestLocale()) === "en";
+  const groups = english
+    ? [
+        { title: "Capacity", rows: [["Environments", (p: SitePlan) => `${p.envLimit}`], ["Concurrent sessions", (p: SitePlan) => `${p.concurrent}`], ["Devices per member", (p: SitePlan) => `${p.deviceLimit}`], ["Member seats (including owner)", (p: SitePlan) => `${p.seats}`]] },
+        { title: "Environments", rows: [["Chromium and Firefox engine families", () => true], ["Timezone, language, and location follow the proxy exit", () => true], ["Authenticated proxies with launch blocking on connection failure", () => true], ["Batch actions", () => true], ["Automation workflows", () => true]] },
+        { title: "Sync and teams", rows: [["Encrypted sync for environments, proxies, and login state", (p: SitePlan) => p.plan !== "free"], ["Folder-based member access", (p: SitePlan) => p.seats > 1], ["Activity log", () => true]] },
+        { title: "Integration", rows: [["Local API", (p: SitePlan) => p.api === "off" ? false : p.api === "discover" ? "Read-only" : "Start and stop"]] },
+      ] as typeof GROUPS
+    : GROUPS;
+  const billingFaq = english
+    ? ([
+        ["How does billing work?", "Paid plans are billed monthly by card and renew automatically. Billing details can be managed from the account page."],
+        ["Can I cancel at any time?", "Yes. The plan remains active until the end of the current billing period, then returns to Free."],
+        ["What happens when a plan expires or is downgraded?", "Environments are not deleted. The earliest environments up to the current limit remain available to start."],
+        ["How are Team seats counted?", "Team includes up to 6 members, including the owner. Each member signs in with an individual account."],
+        ["Can I arrange payment offline?", "Yes. Contact support with the required plan and term."],
+      ] as [string, string][])
+    : BILLING_FAQ;
   return (
     <main>
       <PageHead
-        eyebrow="套餐"
-        title="按环境数付费"
-        lead="安装包免费。免费档永久可用；付费档按月订阅，随时可以取消。"
+        eyebrow={english ? "Pricing" : "套餐"}
+        title={english ? "Plans based on environment capacity" : "按环境数付费"}
+        lead={english ? "The app is free to install. The Free plan remains available without a time limit; paid plans are billed monthly." : "安装包免费。免费套餐长期可用；付费套餐按月订阅，可随时取消。"}
       />
 
       <section className="py-14 sm:py-16">
@@ -86,7 +108,7 @@ export default function PricingPage() {
 
       <section className="pb-24">
         <div className="site-wrap">
-          <h2 className="text-[24px] font-semibold tracking-[-0.01em]">完整对比</h2>
+          <h2 className="text-[24px] font-semibold tracking-[-0.01em]">{english ? "Full comparison" : "完整对比"}</h2>
           <div className="table-scroll mt-6 rounded-xl border border-border">
             <table className="data-table min-w-[720px] table-fixed">
               <colgroup>
@@ -98,7 +120,7 @@ export default function PricingPage() {
               <thead>
                 <tr>
                   <th scope="col">
-                    <span className="sr-only">项目</span>
+                    <span className="sr-only">{english ? "Feature" : "项目"}</span>
                   </th>
                   {PLANS.map((p) => (
                     <th
@@ -106,12 +128,12 @@ export default function PricingPage() {
                       scope="col"
                       className={cn("text-center text-[14px] text-foreground", p.plan === FEATURED && "bg-chip text-chip-foreground")}
                     >
-                      {p.name}
+                      {english && p.plan === "free" ? "Free" : p.name}
                     </th>
                   ))}
                 </tr>
               </thead>
-              {GROUPS.map((g) => (
+              {groups.map((g) => (
                 <tbody key={g.title}>
                   <tr>
                     <th scope="colgroup" className="bg-background pt-6 text-[13px] text-foreground">
@@ -128,7 +150,7 @@ export default function PricingPage() {
                       </th>
                       {PLANS.map((p) => (
                         <td key={p.plan} className={cn("text-center", p.plan === FEATURED && "bg-chip/40")}>
-                          <Cell value={value(p)} />
+                          <Cell value={value(p)} english={english} />
                         </td>
                       ))}
                     </tr>
@@ -138,15 +160,15 @@ export default function PricingPage() {
             </table>
           </div>
           <p className="mt-4 text-[13.5px] text-muted-foreground">
-            价格以美元计，不含可能产生的税费。每一档都能下载内核的安全更新。
+            {english ? "Prices are in US dollars and exclude applicable taxes. Every plan includes kernel security updates." : "价格以美元计，不含可能产生的税费。所有套餐均包含内核安全更新。"}
           </p>
         </div>
       </section>
 
       <section className="border-t border-border py-24">
         <div className="site-wrap grid gap-10 lg:grid-cols-[1fr_2fr]">
-          <h2 className="display-3">付款与订阅</h2>
-          <Faq items={BILLING_FAQ} />
+          <h2 className="display-3">{english ? "Billing and subscriptions" : "付款与订阅"}</h2>
+          <Faq items={billingFaq} />
         </div>
       </section>
     </main>

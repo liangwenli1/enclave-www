@@ -1,4 +1,5 @@
 import { cn } from "cn";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
 
 /*
  * 指纹清单：只写在真实内核上实测过的。「跟随本机」是这类内核本身改不了的项，
@@ -23,6 +24,20 @@ export const FINGERPRINT_ROWS: [string, Cell, Cell][] = [
   ["navigator.webdriver", yes("始终为 false"), yes("始终为 false")],
 ];
 
+const FINGERPRINT_ROWS_EN: [string, Cell, Cell][] = [
+  ["User-Agent and Client Hints", yes("Per environment"), yes("Per environment")],
+  ["Timezone, language, and number formats", yes("Follows proxy exit"), yes("Follows proxy exit")],
+  ["Location", yes("Exit, custom, or disabled"), yes("Exit, custom, or disabled")],
+  ["WebRTC", yes("Proxy only"), yes("Proxy only")],
+  ["Canvas", yes("Noise-adjusted or native"), host("Native", "Matches standard Firefox behavior")],
+  ["CPU cores", yes("Per environment"), yes("Per environment")],
+  ["Operating-system platform", host("Follows host system"), yes("Windows, macOS, or Linux")],
+  ["Fonts", host("Follows host system"), yes("Matched platform set")],
+  ["Screen resolution and scaling", host("Follows host system", "Window size is configurable"), yes("Matched real-device profiles")],
+  ["WebGL vendor and renderer", host("Not yet verified"), yes("Per environment")],
+  ["navigator.webdriver", yes("Always false"), yes("Always false")],
+];
+
 function Td({ cell }: { cell: Cell }) {
   return (
     <td className={cn(cell.ok ? "font-medium text-ok" : "text-muted-foreground")}>
@@ -32,19 +47,21 @@ function Td({ cell }: { cell: Cell }) {
   );
 }
 
-export function FingerprintTable() {
+export async function FingerprintTable() {
+  const english = (await getRequestLocale()) === "en";
+  const rows = english ? FINGERPRINT_ROWS_EN : FINGERPRINT_ROWS;
   return (
     <div className="table-scroll rounded-xl border border-border bg-card">
       <table className="data-table min-w-[620px]">
         <thead>
           <tr>
-            <th scope="col">项目</th>
-            <th scope="col">Chromium 类</th>
-            <th scope="col">Firefox 类</th>
+            <th scope="col">{english ? "Item" : "项目"}</th>
+            <th scope="col">{english ? "Chromium family" : "Chromium 类"}</th>
+            <th scope="col">{english ? "Firefox family" : "Firefox 类"}</th>
           </tr>
         </thead>
         <tbody>
-          {FINGERPRINT_ROWS.map(([name, chromium, firefox]) => (
+          {rows.map(([name, chromium, firefox]) => (
             <tr key={name}>
               <th scope="row" className="bg-transparent text-[14.5px] font-medium whitespace-normal text-foreground">
                 {name}

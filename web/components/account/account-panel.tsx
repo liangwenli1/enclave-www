@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/locale-link";
 import { useCallback, useEffect, useState } from "react";
 import { cn } from "cn";
 import { ActivityLog } from "@/components/account/activity-log";
 import { AuthForm, type AuthMode } from "@/components/account/auth-form";
+import { useLocale } from "@/components/locale-provider";
 import { TeamPanel } from "@/components/account/team-panel";
 import { Boundary } from "@/components/boundary";
 import { ErrorText, KeyValues, Meter, Muted, Panel } from "@/components/panel";
@@ -49,6 +50,7 @@ async function fetchState(): Promise<State> {
 }
 
 export function AccountPanel() {
+  const english = useLocale() === "en";
   const [state, setState] = useState<State>({ plans: [], online: [], view: { kind: "loading" }, scrollToUpgrade: false });
   // 从套餐页带来的档位（?plan=pro）和从收银台回来的标记（?paid=1）。只在浏览器里读。
   const [query, setQuery] = useState<{ plan: string; paid: boolean }>({ plan: "", paid: false });
@@ -92,11 +94,11 @@ export function AccountPanel() {
   const [title, lead] =
     view.kind === "auth"
       ? view.mode === "up"
-        ? ["注册", "注册即开通免费档，无需绑卡。"]
-        : ["登录", "登录后查看档位、额度、已登录的电脑和团队。"]
+        ? [english ? "Create account" : "注册", english ? "Start on the free plan. No payment method required." : "注册后即开通免费档，无需绑定付款方式。"]
+        : [english ? "Sign in" : "登录", english ? "Review your plan, usage, signed-in devices, and team." : "登录后查看档位、额度、已登录设备与团队。"]
       : view.kind === "offline"
-        ? ["账号服务暂时不可用", "已经打开的环境不受影响；新建和启动要等服务恢复。"]
-        : ["账号", "正在读取账号状态…"];
+        ? [english ? "Account service unavailable" : "账号服务暂时不可用", english ? "Open environments are unaffected. Creating or starting an environment will resume when service is restored." : "已打开的环境不受影响；服务恢复后可继续新建或启动环境。"]
+        : [english ? "Account" : "账号", english ? "Loading account status…" : "正在读取账号状态…"];
 
   return (
     <div className="site-wrap grid min-h-[60vh] place-items-start justify-center py-14 sm:py-20">
@@ -116,7 +118,7 @@ export function AccountPanel() {
               <ErrorText>{view.message}</ErrorText>
               <div>
                 <Button variant="outline" onClick={() => void load()}>
-                  重试
+                  {english ? "Try again" : "重试"}
                 </Button>
               </div>
             </div>

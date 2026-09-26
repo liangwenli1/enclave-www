@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { cn } from "cn";
+import { useLocale } from "@/components/locale-provider";
 
 export type TourItem = { key: string; label: string; icon: ReactNode; panel: ReactNode };
 
@@ -10,6 +11,7 @@ export type TourItem = { key: string; label: string; icon: ReactNode; panel: Rea
  * 只是非当前的那几块隐藏。键盘左右键切换，读屏按 tablist 朗读。
  */
 export function Tour({ items }: { items: TourItem[] }) {
+  const english = useLocale() === "en";
   const [active, setActive] = useState(0);
   const base = useId();
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -32,7 +34,7 @@ export function Tour({ items }: { items: TourItem[] }) {
     <div>
       <div
         role="tablist"
-        aria-label="产品功能"
+        aria-label={english ? "Product features" : "产品功能"}
         className="no-scrollbar -mx-5 flex overflow-x-auto border-b border-border px-5 sm:mx-0 sm:px-0"
       >
         {items.map((item, i) => (

@@ -1,10 +1,11 @@
-import Link from "next/link";
+import { LocaleLink as Link } from "@/components/locale-link";
 import { ArrowRight } from "lucide-react";
 import { cn } from "cn";
 import { Glyph } from "@/components/brand";
 import { Shot, WindowFrame } from "@/components/frame";
 import { RidgeField } from "@/components/ridge-field";
 import { buttonVariants } from "@/components/ui/button";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
 
 type Identity = {
   seed: number;
@@ -49,7 +50,13 @@ const IDENTITIES: Identity[] = [
   },
 ];
 
-function IdentityCard({ id }: { id: Identity }) {
+const IDENTITIES_EN: Identity[] = [
+  { ...IDENTITIES[0], name: "US Store 01", exit: "Los Angeles · Residential IP" },
+  { ...IDENTITIES[1], name: "DE Ads 01", exit: "Berlin · Residential IP" },
+  { ...IDENTITIES[2], name: "JP Social 12", exit: "Tokyo · Mobile IP" },
+];
+
+function IdentityCard({ id, english }: { id: Identity; english: boolean }) {
   return (
     <div
       className={cn(
@@ -63,16 +70,16 @@ function IdentityCard({ id }: { id: Identity }) {
         {id.running ? (
           <span className="ml-auto flex items-center gap-1.5 text-[12px] font-medium text-primary">
             <i className="size-1.5 rounded-full bg-primary" />
-            运行中
+            {english ? "Running" : "运行中"}
           </span>
         ) : null}
       </div>
       <dl className="mt-3 grid grid-cols-[3.2em_1fr] gap-x-2 gap-y-1.5 leading-snug">
-        <dt className="text-muted-foreground">出口</dt>
+        <dt className="text-muted-foreground">{english ? "Exit" : "出口"}</dt>
         <dd>{id.exit}</dd>
-        <dt className="text-muted-foreground">时区</dt>
+        <dt className="text-muted-foreground">{english ? "Timezone" : "时区"}</dt>
         <dd className="font-mono text-[12.5px]">{id.tz}</dd>
-        <dt className="text-muted-foreground">语言</dt>
+        <dt className="text-muted-foreground">{english ? "Language" : "语言"}</dt>
         <dd className="font-mono text-[12.5px]">
           {id.lang}
           <span className="ml-3 font-sans text-muted-foreground">{id.os}</span>
@@ -82,26 +89,32 @@ function IdentityCard({ id }: { id: Identity }) {
   );
 }
 
-export function Hero() {
+export async function Hero() {
+  const english = (await getRequestLocale()) === "en";
+  const identities = english ? IDENTITIES_EN : IDENTITIES;
   return (
     <section className="relative overflow-hidden pb-24">
       <RidgeField className="pointer-events-none absolute inset-0 h-full w-full" />
       <div className="site-wrap relative pt-14 sm:pt-20 lg:pt-24">
-        <h1 className="display-1 max-w-[12em]">每个账号，一台独立的电脑。</h1>
+        <h1 className="display-1 max-w-[12em]">{english ? "A separate computer for every account." : "每个账号，一台独立的电脑。"}</h1>
         <p className="lead mt-6 max-w-[34em]">
-          指纹、Cookie、IP 互不相通，平台看不出它们来自同一个人。团队一起用，密码不外泄。
+          {english
+            ? "Isolate browser fingerprints, cookies, and proxy exits for every account. Share environments with the team without sharing account passwords."
+            : "为每个账号隔离浏览器指纹、Cookie 与代理出口，降低跨账号关联风险。团队共享环境，无需共享账号密码。"}
         </p>
         <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
           <Link href="/download" className={buttonVariants({ size: "lg" })}>
-            免费下载
+            {english ? "Free download" : "免费下载"}
           </Link>
           <Link href="/pricing" className="inline-flex items-center gap-1.5 font-medium text-link hover:underline hover:underline-offset-4">
-            查看套餐
+            {english ? "View pricing" : "查看套餐"}
             <ArrowRight className="size-4" />
           </Link>
         </div>
         <p className="mt-5 text-[13.5px] text-muted-foreground">
-          免费 3 个环境，无需绑卡 · Windows 10 / 11 · macOS（Apple Silicon）
+          {english
+            ? "3 environments free · No card required · Windows 10/11 · macOS (Apple Silicon)"
+            : "免费 3 个环境，无需绑卡 · Windows 10 / 11 · macOS（Apple Silicon）"}
         </p>
 
         <div className="relative mt-14 lg:mt-16">
@@ -109,12 +122,12 @@ export function Hero() {
             <Shot
               priority
               src="/shots/hero.webp"
-              alt="Enclave 工作台：环境按美国店铺、德国广告、日本社媒三个文件夹分组，两个美国店铺正在运行，出口识别为洛杉矶"
+              alt={english ? "Enclave workspace showing isolated environments grouped by team and region" : "Enclave 工作台：环境按美国店铺、德国广告、日本社媒三个文件夹分组，两个美国店铺正在运行，出口识别为洛杉矶"}
             />
           </WindowFrame>
           <div className="no-scrollbar -mx-5 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-6 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:contents">
-            {IDENTITIES.map((id) => (
-              <IdentityCard key={id.name} id={id} />
+            {identities.map((id) => (
+              <IdentityCard key={id.name} id={id} english={english} />
             ))}
           </div>
         </div>
@@ -130,11 +143,20 @@ const FACTS = [
   ["运行在本机", "浏览器在本机运行，不经云端中转"],
 ] as const;
 
-export function Facts() {
+export async function Facts() {
+  const english = (await getRequestLocale()) === "en";
+  const facts = english
+    ? ([
+        ["3 environments", "Free forever, with the same security updates as paid plans"],
+        ["Two engine families", "Chromium and Firefox, with multiple versions"],
+        ["End-to-end encryption", "Login state and proxy credentials are encrypted before upload"],
+        ["Runs locally", "Browsers run on this computer, not through a cloud relay"],
+      ] as const)
+    : FACTS;
   return (
     <div className="border-y border-border">
       <dl className="site-wrap grid grid-cols-2 lg:grid-cols-4">
-        {FACTS.map(([title, text], i) => (
+        {facts.map(([title, text], i) => (
           <div
             key={title}
             className={cn(

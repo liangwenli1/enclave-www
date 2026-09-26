@@ -30,10 +30,17 @@ export const PLANS = data.plans as SitePlan[];
 export const FEATURED: PlanId = "pro";
 
 export const PLAN_FOR: Record<PlanId, string> = {
-  free: "先试一试，管几个自己的账号",
-  solo: "一个人运营几十个账号",
-  pro: "高频操作，需要脚本接入",
-  team: "多人协作，按文件夹分工",
+  free: "适合个人体验与轻量使用",
+  solo: "适合个人管理多账号",
+  pro: "适合高频运营与 API 自动化",
+  team: "适合多人协作与权限管理",
+};
+
+export const PLAN_FOR_EN: Record<PlanId, string> = {
+  free: "For evaluation and light personal use",
+  solo: "For individuals managing multiple accounts",
+  pro: "For high-volume operations and API automation",
+  team: "For team collaboration and access control",
 };
 
 export const API_LABEL: Record<ApiLevel, string> = {

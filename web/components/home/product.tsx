@@ -5,6 +5,7 @@ import { Glyph } from "@/components/brand";
 import { Shot, WindowFrame } from "@/components/frame";
 import { BatchIcon, FlowIcon, IsolationIcon, LockIcon, TeamIcon } from "@/components/icons";
 import { Tour } from "@/components/home/tour";
+import { getRequestLocale } from "@/lib/i18n/request-locale";
 
 /* 功能导览的四块：左边一句好处 + 两三条要点，右边真实界面，外加一张放大的细节卡。 */
 
@@ -47,74 +48,74 @@ function Card({ title, aside, children }: { title: string; aside?: ReactNode; ch
   );
 }
 
-function ExitDetail() {
+function ExitDetail({ english }: { english: boolean }) {
   const rows: [string, string][] = [
-    ["时区", "America/Los_Angeles"],
-    ["语言", "en-US"],
-    ["地理位置", "34.05, −118.24"],
+    [english ? "Timezone" : "时区", "America/Los_Angeles"],
+    [english ? "Language" : "语言", "en-US"],
+    [english ? "Location" : "地理位置", "34.05, −118.24"],
   ];
   return (
-    <Card title="代理出口已识别" aside={<span className="font-mono text-[12px] text-muted-foreground">104.28.51.7</span>}>
-      <p className="text-body">美国 · 洛杉矶</p>
+    <Card title={english ? "Proxy exit detected" : "已识别代理出口"} aside={<span className="font-mono text-[12px] text-muted-foreground">104.28.51.7</span>}>
+      <p className="text-body">{english ? "United States · Los Angeles" : "美国，洛杉矶"}</p>
       <dl className="mt-3 grid gap-2 border-t border-border pt-3">
         {rows.map(([k, v]) => (
           <div key={k} className="grid grid-cols-[4.5em_1fr_16px] items-center gap-2">
             <dt className="text-muted-foreground">{k}</dt>
             <dd className="font-mono text-[12.5px]">{v}</dd>
-            <Check className="size-4 text-ok" aria-label="已跟随出口" />
+            <Check className="size-4 text-ok" aria-label={english ? "Matched to exit" : "已跟随出口"} />
           </div>
         ))}
         <div className="grid grid-cols-[4.5em_1fr] items-center gap-2">
           <dt className="text-muted-foreground">WebRTC</dt>
-          <dd>只走代理，本机地址不外露</dd>
+          <dd>{english ? "Routed through the proxy without exposing the local address" : "仅通过代理连接，不暴露本机地址"}</dd>
         </div>
       </dl>
       <p className="mt-3 flex items-center gap-1.5 rounded-lg bg-[#e3f4ea] px-3 py-2 text-ok">
         <Check className="size-3.5" aria-hidden="true" />
-        时区、语言、定位已按出口自动设置
+        {english ? "Timezone, language, and location matched to the exit" : "时区、语言与位置已按出口自动设置"}
       </p>
     </Card>
   );
 }
 
-function BatchDetail() {
+function BatchDetail({ english }: { english: boolean }) {
   return (
-    <Card title="启动队列 · 美国店铺" aside={<span className="font-mono text-[12px] text-muted-foreground">2 / 3</span>}>
+    <Card title={english ? "Launch queue · US Stores" : "启动队列，美国店铺"} aside={<span className="font-mono text-[12px] text-muted-foreground">2 / 3</span>}>
       <ul className="grid gap-2">
-        {["美国店铺 01", "美国店铺 02"].map((n) => (
+        {(english ? ["US Store 01", "US Store 02"] : ["美国店铺 01", "美国店铺 02"]).map((n) => (
           <li key={n} className="flex items-center justify-between">
             <span>{n}</span>
             <span className="flex items-center gap-1 font-medium text-primary">
               <i className="size-1.5 rounded-full bg-primary" />
-              已启动
+              {english ? "Started" : "已启动"}
             </span>
           </li>
         ))}
         <li className="flex items-center justify-between">
-          <span>美国店铺 03</span>
+          <span>{english ? "US Store 03" : "美国店铺 03"}</span>
           <span className="flex items-center gap-1 text-muted-foreground">
             <Clock3 className="size-3.5" aria-hidden="true" />
-            排队中
+            {english ? "Queued" : "排队中"}
           </span>
         </li>
       </ul>
       <p className="mt-3 rounded-lg bg-muted px-3 py-2 leading-relaxed text-body">
-        三个环境走同一个代理出口，错开启动，24 秒后开始。
+        {english ? "These environments share a proxy exit and will launch 24 seconds apart." : "三个环境共用同一代理出口，将错开启动；下一项将在 24 秒后开始。"}
       </p>
     </Card>
   );
 }
 
-function FlowDetail() {
+function FlowDetail({ english }: { english: boolean }) {
   const log: [string, string][] = [
-    ["打开网页", "0.9 秒"],
-    ["等待元素出现", "1.4 秒"],
-    ["点击", "0.2 秒"],
-    ["提取文本 → health", "0.1 秒"],
-    ["条件判断", "0.0 秒"],
+    [english ? "Open page" : "打开网页", english ? "0.9 s" : "0.9 秒"],
+    [english ? "Wait for element" : "等待元素出现", english ? "1.4 s" : "1.4 秒"],
+    [english ? "Click" : "点击", english ? "0.2 s" : "0.2 秒"],
+    [english ? "Extract text → health" : "提取文本 → health", english ? "0.1 s" : "0.1 秒"],
+    [english ? "Evaluate condition" : "条件判断", english ? "0.0 s" : "0.0 秒"],
   ];
   return (
-    <Card title="运行记录 · 美国店铺 01" aside={<span className="text-[12px] font-medium text-ok">5 / 5 步完成</span>}>
+    <Card title={english ? "Run log · US Store 01" : "运行记录，美国店铺 01"} aside={<span className="text-[12px] font-medium text-ok">{english ? "5 / 5 complete" : "5 / 5 步完成"}</span>}>
       <ol className="grid gap-1.5">
         {log.map(([step, t], i) => (
           <li key={step} className="grid grid-cols-[1.4em_1fr_auto] items-center gap-2">
@@ -125,7 +126,7 @@ function FlowDetail() {
         ))}
       </ol>
       <p className="mt-3 border-t border-border pt-3 text-body">
-        <span className="font-mono text-[12.5px] text-chip-foreground">{"{{health}}"}</span> = 良好
+        <span className="font-mono text-[12.5px] text-chip-foreground">{"{{health}}"}</span> = {english ? "healthy" : "正常"}
       </p>
     </Card>
   );
@@ -138,16 +139,16 @@ const MEMBERS: [string, string, string[] | null][] = [
   ["ads@example.com", "操作员", ["德国广告", "日本社媒"]],
 ];
 
-function TeamPanel() {
+function TeamPanel({ english }: { english: boolean }) {
   return (
     <div
       role="img"
-      aria-label="团队成员示意：所有者和管理员看得到全部环境，两位操作员各自只看得到分配给自己的文件夹"
+      aria-label={english ? "Team access example showing owners, admins, and folder-scoped operators" : "团队权限示例：所有者和管理员可以访问全部环境，操作员只能访问已分配的文件夹"}
       className="overflow-hidden rounded-[14px] border border-input bg-card shadow-frame"
     >
       <div className="flex items-baseline justify-between border-b border-border bg-muted px-5 py-3.5">
-        <span className="font-semibold">团队成员</span>
-        <span className="font-mono text-[12.5px] text-muted-foreground">4 / 6 个席位</span>
+        <span className="font-semibold">{english ? "Team members" : "团队成员"}</span>
+        <span className="font-mono text-[12.5px] text-muted-foreground">{english ? "4 / 6 seats" : "4 / 6 个席位"}</span>
       </div>
       <ul className="px-5">
         {MEMBERS.map(([email, role, folders]) => (
@@ -156,19 +157,19 @@ function TeamPanel() {
               <Glyph seed={email.length * 977} className="size-7" />
               <div className="min-w-0">
                 <p className="truncate text-[14.5px]">{email}</p>
-                <p className="text-[12.5px] text-muted-foreground">{role}</p>
+                <p className="text-[12.5px] text-muted-foreground">{english ? ({ 所有者: "Owner", 管理员: "Admin", 操作员: "Operator" }[role] ?? role) : role}</p>
               </div>
             </div>
             <div className="flex flex-wrap justify-end gap-1.5">
               {folders ? (
                 folders.map((f) => (
                   <span key={f} className="rounded-full bg-chip px-2.5 py-0.5 text-[12.5px] whitespace-nowrap text-chip-foreground">
-                    {f}
+                    {english ? ({ 美国店铺: "US Stores", 德国广告: "DE Ads", 日本社媒: "JP Social" }[f] ?? f) : f}
                   </span>
                 ))
               ) : (
                 <span className="rounded-full border border-input px-2.5 py-0.5 text-[12.5px] whitespace-nowrap text-muted-foreground">
-                  全部环境
+                  {english ? "All environments" : "全部环境"}
                 </span>
               )}
             </div>
@@ -179,12 +180,12 @@ function TeamPanel() {
   );
 }
 
-function SyncDetail() {
+function SyncDetail({ english }: { english: boolean }) {
   return (
-    <Card title="同步已开启" aside={<LockIcon className="size-4 text-ok" />}>
-      <p className="leading-relaxed text-body">登录态与代理密码在本机加密后上传，服务器只保存密文。</p>
+    <Card title={english ? "Encrypted sync enabled" : "已启用加密同步"} aside={<LockIcon className="size-4 text-ok" />}>
+      <p className="leading-relaxed text-body">{english ? "Login state and proxy credentials are encrypted locally before upload. The server stores ciphertext only." : "登录状态与代理密码在本机加密后上传，服务器只保存密文。"}</p>
       <p className="mt-3 border-t border-border pt-3 leading-relaxed text-body">
-        移出 ads@example.com 后，其经手的 4 个环境已在后台更换密钥。
+        {english ? "After ads@example.com was removed, keys were rotated for the 4 affected environments." : "移除 ads@example.com 后，相关 4 个环境已在后台更换密钥。"}
       </p>
     </Card>
   );
@@ -199,38 +200,35 @@ function Panel({ copy, visual }: { copy: ReactNode; visual: ReactNode }) {
   );
 }
 
-export function Product() {
+export async function Product() {
+  const english = (await getRequestLocale()) === "en";
   return (
     <section id="product" className="scroll-mt-20 py-24 sm:py-28">
       <div className="site-wrap">
         <div className="max-w-[40em]">
-          <p className="eyebrow">产品</p>
-          <h2 className="display-3 mt-3">一个工作台，管好所有账号</h2>
+          <p className="eyebrow">{english ? "Product" : "产品"}</p>
+          <h2 className="display-3 mt-3">{english ? "Manage every account from one workspace" : "一个工作台，管理所有账号"}</h2>
         </div>
         <div className="mt-10">
           <Tour
             items={[
               {
                 key: "isolation",
-                label: "环境隔离",
+                label: english ? "Isolation" : "环境隔离",
                 icon: <IsolationIcon />,
                 panel: (
                   <Panel
                     copy={
                       <Copy
-                        title="绑上代理，其余自动对齐"
-                        text="每个环境的指纹、Cookie、缓存各自独立。时区、语言、地理位置跟着代理出口走：IP 在洛杉矶，浏览器就在洛杉矶。"
-                        points={[
-                          "Canvas 加噪声或保持真实，逐个环境选择",
-                          "WebRTC 只走代理，不暴露本机地址",
-                          "内核启动前校验文件，被改动过就拒绝启动",
-                        ]}
+                        title={english ? "Bind a proxy; Enclave aligns the environment" : "绑定代理，其余设置自动对齐"}
+                        text={english ? "Each environment keeps its own fingerprint, cookies, and cache. Timezone, language, and location follow the proxy exit." : "每个环境拥有独立的指纹、Cookie 与缓存。时区、语言和位置可跟随代理出口自动设置。"}
+                        points={english ? ["Choose a stable or noise-adjusted Canvas profile", "Route WebRTC through the proxy without exposing the local address", "Verify kernel files before every launch"] : ["按环境选择稳定或加噪的 Canvas 配置", "WebRTC 仅通过代理连接，不暴露本机地址", "每次启动前校验内核文件"]}
                       />
                     }
                     visual={
-                      <Visual detail={<ExitDetail />} detailClass="lg:-bottom-2 lg:-left-10">
+                      <Visual detail={<ExitDetail english={english} />} detailClass="lg:-bottom-2 lg:-left-10">
                         <WindowFrame os="macos">
-                          <Shot src="/shots/fp.webp" alt="环境详情的指纹页：系统、品牌、Canvas、地理位置、地区与时区，出口识别为洛杉矶" />
+                          <Shot src="/shots/fp.webp" alt={english ? "Fingerprint settings for system, browser brand, Canvas, location, locale, and timezone matched to a Los Angeles exit" : "环境详情的指纹页：系统、品牌、Canvas、地理位置、地区与时区，出口识别为洛杉矶"} />
                         </WindowFrame>
                       </Visual>
                     }
@@ -239,21 +237,21 @@ export function Product() {
               },
               {
                 key: "batch",
-                label: "批量执行",
+                label: english ? "Batch actions" : "批量执行",
                 icon: <BatchIcon />,
                 panel: (
                   <Panel
                     copy={
                       <Copy
-                        title="一整个文件夹的环境，一次点完"
-                        text="选中一批环境，一起启动、停止或运行流程。同时运行数满了自动排队；同一个代理出口自动错开，不会在同一秒冒出一片登录。"
-                        points={["一批最多 200 个环境，同时启动数可调", "只对短暂的问题重试，真正的失败直接写明原因"]}
+                        title={english ? "Run actions across an entire folder" : "一次处理整个文件夹"}
+                        text={english ? "Start, stop, or run a workflow across selected environments. Capacity limits queue automatically, while shared proxy exits launch in sequence." : "批量启动、停止或运行流程。达到并发上限时自动排队；共用代理出口的环境会错开启动。"}
+                        points={english ? ["Process up to 200 environments per batch", "Retry recoverable conditions and report permanent failures clearly"] : ["单批最多处理 200 个环境，并可调整并发数", "仅重试可恢复问题，永久失败会明确说明原因"]}
                       />
                     }
                     visual={
-                      <Visual detail={<BatchDetail />} detailClass="lg:-bottom-2 lg:-left-10">
+                      <Visual detail={<BatchDetail english={english} />} detailClass="lg:-bottom-2 lg:-left-10">
                         <WindowFrame os="macos">
-                          <Shot src="/shots/batch.webp" alt="批量执行面板：美国店铺文件夹里的三个环境都已跑完「店铺每日签到」流程" />
+                          <Shot src="/shots/batch.webp" alt={english ? "Batch action panel showing three US Store environments completing a daily sign-in workflow" : "批量执行面板：美国店铺文件夹里的三个环境都已跑完「店铺每日签到」流程"} />
                         </WindowFrame>
                       </Visual>
                     }
@@ -262,21 +260,21 @@ export function Product() {
               },
               {
                 key: "flow",
-                label: "自动化",
+                label: english ? "Automation" : "自动化",
                 icon: <FlowIcon />,
                 panel: (
                   <Panel
                     copy={
                       <Copy
-                        title="每天重复的操作，写成一次流程"
-                        text="打开网页、点击、输入、等待、提取文字、条件判断、循环，十种步骤拼成一条流程，不必写代码。失败时重试、跳过还是终止，每一步单独设置。"
-                        points={["同一条流程在两类内核上都能运行", "提取到的文字存成变量，后续步骤直接引用"]}
+                        title={english ? "Turn repetitive work into a reusable workflow" : "将重复操作整理为流程"}
+                        text={english ? "Combine navigation, clicks, input, waits, extraction, conditions, and loops without writing code. Configure retries or termination per step." : "通过打开网页、点击、输入、等待、提取、条件和循环构建流程，无需编写代码。每一步可单独设置失败处理方式。"}
+                        points={english ? ["Run the same workflow on both engine families", "Store extracted text as variables for later steps"] : ["同一流程可在两类内核上运行", "提取结果可保存为变量供后续步骤使用"]}
                       />
                     }
                     visual={
-                      <Visual detail={<FlowDetail />} detailClass="lg:-bottom-2 lg:-left-10">
+                      <Visual detail={<FlowDetail english={english} />} detailClass="lg:-bottom-2 lg:-left-10">
                         <WindowFrame os="macos">
-                          <Shot src="/shots/flow.webp" alt="自动化页：「店铺每日签到」流程的步骤，打开网页、等待元素出现、点击、提取文本" />
+                          <Shot src="/shots/flow.webp" alt={english ? "Automation workflow with navigation, wait, click, and text-extraction steps" : "自动化页：「店铺每日签到」流程的步骤，打开网页、等待元素出现、点击、提取文本"} />
                         </WindowFrame>
                       </Visual>
                     }
@@ -285,20 +283,20 @@ export function Product() {
               },
               {
                 key: "team",
-                label: "团队协作",
+                label: english ? "Team access" : "团队协作",
                 icon: <TeamIcon />,
                 panel: (
                   <Panel
                     copy={
                       <Copy
-                        title="员工只看得到分给自己的店铺"
-                        text="按文件夹授权，新建进文件夹的环境自动跟着授权走。操作员能打开环境，看不到代理密码，也导不出环境包。"
-                        points={["换一台电脑，登录态仍在，无需逐个重新登录", "操作日志记录谁在哪台电脑上打开了哪个环境"]}
+                        title={english ? "Give each member access only to assigned work" : "成员只能访问已分配的环境"}
+                        text={english ? "Grant access by folder. New environments inherit folder permissions. Operators can run environments without seeing proxy passwords or exporting packages." : "按文件夹分配权限，新建环境自动继承文件夹授权。操作员可以启动环境，但不能查看代理密码或导出环境包。"}
+                        points={english ? ["Keep login state available across authorized devices", "Audit who opened each environment and from which device"] : ["登录状态可在已授权设备间同步", "操作日志记录环境、成员与设备"]}
                       />
                     }
                     visual={
-                      <Visual detail={<SyncDetail />} detailClass="lg:-bottom-6 lg:-left-10">
-                        <TeamPanel />
+                      <Visual detail={<SyncDetail english={english} />} detailClass="lg:-bottom-6 lg:-left-10">
+                        <TeamPanel english={english} />
                       </Visual>
                     }
                   />

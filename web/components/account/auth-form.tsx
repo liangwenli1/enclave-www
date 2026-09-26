@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { cn } from "cn";
 import { Field } from "@/components/field";
+import { useLocale } from "@/components/locale-provider";
 import { ErrorText } from "@/components/panel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ export function AuthForm({
   onMode: (m: AuthMode) => void;
   onDone: () => Promise<void>;
 }) {
+  const english = useLocale() === "en";
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -45,11 +47,11 @@ export function AuthForm({
 
   return (
     <div className="grid gap-6">
-      <div role="tablist" aria-label="登录或注册" className="grid grid-cols-2 rounded-full bg-accent p-1">
+      <div role="tablist" aria-label={english ? "Sign in or create account" : "登录或注册"} className="grid grid-cols-2 rounded-full bg-accent p-1">
         {(
           [
-            ["in", "登录"],
-            ["up", "注册"],
+            ["in", english ? "Sign in" : "登录"],
+            ["up", english ? "Create account" : "注册"],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -71,10 +73,10 @@ export function AuthForm({
         ))}
       </div>
       <form className="grid gap-4" onSubmit={(e) => void submit(e)}>
-        <Field id="email" label="邮箱">
+        <Field id="email" label={english ? "Email" : "邮箱"}>
           <Input id="email" name="email" type="email" required autoComplete="email" placeholder="name@company.com" />
         </Field>
-        <Field id="password" label={mode === "up" ? "密码（至少 10 位）" : "密码"}>
+        <Field id="password" label={mode === "up" ? (english ? "Password (10 characters minimum)" : "密码（至少 10 位）") : (english ? "Password" : "密码")}>
           <Input
             id="password"
             name="password"
@@ -86,10 +88,10 @@ export function AuthForm({
         </Field>
         {error ? <ErrorText>{error}</ErrorText> : null}
         <Button size="lg" type="submit" disabled={busy} className="mt-1 w-full">
-          {busy ? "处理中…" : mode === "in" ? "登录" : "注册并开通免费档"}
+          {busy ? (english ? "Working…" : "处理中…") : mode === "in" ? (english ? "Sign in" : "登录") : (english ? "Create free account" : "注册并开通免费档")}
         </Button>
         {mode === "up" ? (
-          <p className="text-center text-[13px] text-muted-foreground">免费档：3 个环境、同时运行 1 个，无需绑卡。</p>
+          <p className="text-center text-[13px] text-muted-foreground">{english ? "Free: 3 environments, 1 running at a time, no card required." : "免费档包含 3 个环境、1 个同时运行名额，无需绑定付款方式。"}</p>
         ) : null}
       </form>
     </div>

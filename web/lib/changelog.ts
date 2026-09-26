@@ -33,3 +33,31 @@ export const CHANGELOG: Entry[] = [
     ],
   },
 ];
+
+export const CHANGELOG_EN: Entry[] = [
+  {
+    version: "0.10",
+    date: "2026-09-24",
+    title: "Teams, encrypted sync, batch actions, and automation",
+    items: [
+      "Team roles for owners, administrators, and operators, with environment access granted by folder and key rotation after member removal.",
+      "On-device encryption for environment, proxy, and session sync, so approved devices can resume signed-in sessions.",
+      "Firefox-based engines with coherent real-device profiles alongside Chromium-based engines.",
+      "Batch start, stop, and workflow execution with automatic staggering for environments that share a proxy exit.",
+      "No-code automation workflows built from ten reusable steps across both engine families.",
+      "Geolocation can follow the proxy exit, use a custom value, or remain disabled, including in new tabs.",
+    ],
+  },
+  {
+    version: "0.9",
+    date: "2026-09-21",
+    title: "Initial preview",
+    items: [
+      "Installers for Windows 10/11 and macOS on Apple silicon.",
+      "Multiple engine versions installed side by side, with each environment pinned independently.",
+      "Authenticated proxy support with fail-closed startup and locale signals matched to the exit.",
+      "Coherent fingerprint presets for platform, language, and CPU combinations.",
+      "A local API for listing, starting, and stopping environments from scripts.",
+    ],
+  },
+];

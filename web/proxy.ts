@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isLocale, localeFromLanguage, localeFromPath } from "@/lib/i18n/locale";
 
 /**
  * 每个请求一个随机 nonce，页面里只有带这个 nonce 的脚本和样式能执行。
  * 账号接口和页面同源（Caddy 把 /api/* 反代给账号服务），所以 connect-src 只要 'self'。
  */
 export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const pathLocale = localeFromPath(pathname);
+  const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value.toLowerCase();
+  const locale = pathLocale ?? (cookieLocale && isLocale(cookieLocale) ? cookieLocale : localeFromLanguage(request.headers.get("accept-language")));
+
+  if (!pathLocale) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
+    return NextResponse.redirect(url, 307);
+  }
+
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const dev = process.env.NODE_ENV === "development";
   const csp = [
@@ -22,8 +34,16 @@ export function proxy(request: NextRequest) {
 
   const headers = new Headers(request.headers);
   headers.set("x-nonce", nonce);
+  headers.set("x-enclave-locale", locale);
   headers.set("Content-Security-Policy", csp);
-  const response = NextResponse.next({ request: { headers } });
+  const url = request.nextUrl.clone();
+  url.pathname = pathname.slice(pathLocale.length + 1) || "/";
+  const response = NextResponse.rewrite(url, { request: { headers } });
+  response.cookies.set("NEXT_LOCALE", locale, {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+    sameSite: "lax",
+  });
   response.headers.set("Content-Security-Policy", csp);
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -36,7 +56,7 @@ export const config = {
   matcher: [
     {
       source:
-        "/((?!api|_next/static|_next/image|shots/|icon\\.svg|apple-icon|opengraph-image|twitter-image|robots\\.txt|sitemap\\.xml).*)",
+        "/((?!api|_next/static|_next/image|shots/|.*\\.[^/]+$|apple-icon|opengraph-image|twitter-image|robots\\.txt|sitemap\\.xml).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

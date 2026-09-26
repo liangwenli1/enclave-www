@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { cn } from "cn";
+import { useLocale } from "@/components/locale-provider";
 
 /** 复制一段文字（哈希、授权码、邀请链接）。复制成功后两秒内显示对勾。 */
-export function CopyButton({ value, label = "复制", className }: { value: string; label?: string; className?: string }) {
+export function CopyButton({ value, label, className }: { value: string; label?: string; className?: string }) {
+  const english = useLocale() === "en";
   const [done, setDone] = useState(false);
   return (
     <button
@@ -22,7 +24,7 @@ export function CopyButton({ value, label = "复制", className }: { value: stri
       )}
     >
       {done ? <Check className="size-3.5 text-ok" aria-hidden="true" /> : <Copy className="size-3.5" aria-hidden="true" />}
-      {done ? "已复制" : label}
+      {done ? (english ? "Copied" : "已复制") : (label ?? (english ? "Copy" : "复制"))}
     </button>
   );
 }
