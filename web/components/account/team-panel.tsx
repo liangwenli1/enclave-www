@@ -45,7 +45,8 @@ const seedOf = (s: string) => [...s].reduce((h, c) => (Math.imul(h, 31) + c.char
 export function TeamPanel({ me }: { me: Me }) {
   const [view, setView] = useState<TeamView | null>(null);
   const [folders, setFolders] = useState<FolderRow[]>([]);
-  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [actionError, setActionError] = useState<{ id: string; message: string } | null>(null);
   const [link, setLink] = useState("");
   const [sentTo, setSentTo] = useState("");
   const [busy, setBusy] = useState("");
@@ -60,7 +61,7 @@ export function TeamPanel({ me }: { me: Me }) {
           setView(team);
           setFolders(list.folders);
         },
-        (e: unknown) => setError(message(e)),
+        (e: unknown) => setLoadError(message(e)),
       ),
     [],
   );
@@ -73,7 +74,7 @@ export function TeamPanel({ me }: { me: Me }) {
         setView(team);
         setFolders(list.folders);
       },
-      (e: unknown) => alive && setError(message(e)),
+      (e: unknown) => alive && setLoadError(message(e)),
     );
     return () => {
       alive = false;
@@ -84,7 +85,7 @@ export function TeamPanel({ me }: { me: Me }) {
     e.preventDefault();
     const el = e.currentTarget;
     const form = new FormData(el);
-    setError("");
+    setActionError(null);
     setLink("");
     setBusy("invite");
     try {
@@ -97,19 +98,19 @@ export function TeamPanel({ me }: { me: Me }) {
       el.reset();
       await load();
     } catch (e) {
-      setError(message(e));
+      setActionError({ id: "invite", message: message(e) });
     }
     setBusy("");
   };
 
   const act = async (id: string, run: () => Promise<unknown>) => {
-    setError("");
+    setActionError(null);
     setBusy(id);
     try {
       await run();
       await load();
     } catch (e) {
-      setError(message(e));
+      setActionError({ id, message: message(e) });
     }
     setBusy("");
   };
@@ -119,7 +120,7 @@ export function TeamPanel({ me }: { me: Me }) {
   if (!view) {
     return (
       <Panel id="team" title="团队">
-        {error ? <ErrorText>{error}</ErrorText> : <Muted>读取中…</Muted>}
+        {loadError ? <ErrorText>{loadError}</ErrorText> : <Muted>读取中…</Muted>}
       </Panel>
     );
   }
@@ -192,6 +193,11 @@ export function TeamPanel({ me }: { me: Me }) {
                 </>
               ) : null}
             </div>
+            {actionError?.id === m.id ? (
+              <div className="sm:col-span-2">
+                <ErrorText>{actionError.message}</ErrorText>
+              </div>
+            ) : null}
             {editing?.id === m.id ? (
               <Assign
                 member={m}
@@ -221,6 +227,7 @@ export function TeamPanel({ me }: { me: Me }) {
                 >
                   撤回邀请
                 </Button>
+                {actionError?.id === i.token ? <ErrorText>{actionError.message}</ErrorText> : null}
               </div>
             ) : null}
           </li>
@@ -246,6 +253,7 @@ export function TeamPanel({ me }: { me: Me }) {
               <Button type="submit" disabled={busy === "invite" || view.used >= view.seats}>
                 {busy === "invite" ? "生成中…" : "生成邀请链接"}
               </Button>
+              {actionError?.id === "invite" ? <ErrorText>{actionError.message}</ErrorText> : null}
             </div>
             {view.used >= view.seats ? <Muted>席位已满。移出成员或撤回邀请后才能再邀请。</Muted> : null}
           </form>
@@ -265,6 +273,7 @@ export function TeamPanel({ me }: { me: Me }) {
               <Button type="submit" variant="outline" disabled={busy === "rename"}>
                 {busy === "rename" ? "保存中…" : "保存"}
               </Button>
+              {actionError?.id === "rename" ? <ErrorText>{actionError.message}</ErrorText> : null}
             </div>
           </form>
         </div>
@@ -283,11 +292,6 @@ export function TeamPanel({ me }: { me: Me }) {
         </div>
       ) : null}
 
-      {error ? (
-        <div className="border-t border-border px-5 py-3 sm:px-6">
-          <ErrorText>{error}</ErrorText>
-        </div>
-      ) : null}
     </Panel>
   );
 }

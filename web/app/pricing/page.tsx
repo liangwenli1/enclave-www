@@ -119,7 +119,7 @@ export default async function PricingPage() {
               </colgroup>
               <thead>
                 <tr>
-                  <th scope="col">
+                  <th scope="col" className="sticky left-0 z-10 bg-background">
                     <span className="sr-only">{english ? "Feature" : "项目"}</span>
                   </th>
                   {PLANS.map((p) => (
@@ -136,7 +136,7 @@ export default async function PricingPage() {
               {groups.map((g) => (
                 <tbody key={g.title}>
                   <tr>
-                    <th scope="colgroup" className="bg-background pt-6 text-[13px] text-foreground">
+                    <th scope="colgroup" className="sticky left-0 z-10 bg-background pt-6 text-[13px] text-foreground">
                       {g.title}
                     </th>
                     {PLANS.map((p) => (
@@ -145,7 +145,7 @@ export default async function PricingPage() {
                   </tr>
                   {g.rows.map(([label, value]) => (
                     <tr key={label}>
-                      <th scope="row" className="bg-transparent text-[14.5px] font-normal whitespace-normal text-body">
+                      <th scope="row" className="sticky left-0 z-10 bg-background text-[14.5px] font-normal whitespace-normal text-body">
                         {label}
                       </th>
                       {PLANS.map((p) => (

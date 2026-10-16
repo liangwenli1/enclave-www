@@ -6,6 +6,7 @@ import { Shot, WindowFrame } from "@/components/frame";
 import { RidgeField } from "@/components/ridge-field";
 import { buttonVariants } from "@/components/ui/button";
 import { getRequestLocale } from "@/lib/i18n/request-locale";
+import { RELEASE } from "@/lib/release";
 
 type Identity = {
   seed: number;
@@ -103,8 +104,8 @@ export async function Hero() {
             : "为每个账号隔离浏览器指纹、Cookie 与代理出口，降低跨账号关联风险。团队共享环境，无需共享账号密码。"}
         </p>
         <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
-          <Link href="/download" className={buttonVariants({ size: "lg" })}>
-            {english ? "Free download" : "免费下载"}
+          <Link href={RELEASE ? "/download" : "/account#register"} className={buttonVariants({ size: "lg" })}>
+            {RELEASE ? (english ? "Free download" : "免费下载") : english ? "Create account" : "注册账号"}
           </Link>
           <Link href="/pricing" className="inline-flex items-center gap-1.5 font-medium text-link hover:underline hover:underline-offset-4">
             {english ? "View pricing" : "查看套餐"}

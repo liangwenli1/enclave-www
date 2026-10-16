@@ -1,5 +1,6 @@
 import type { Doc } from "@/content/docs";
 import { LocaleLink as Link } from "@/components/locale-link";
+import { RELEASE } from "@/lib/release";
 import type { ReactNode } from "react";
 
 const Note = ({ children }: { children: ReactNode }) => (
@@ -8,8 +9,8 @@ const Note = ({ children }: { children: ReactNode }) => (
 
 export const DOCS_EN: Doc[] = [
   {
-    slug: "install", group: "Getting started", title: "Install and sign in", summary: "Install Enclave, verify the download, and authorize the workspace in your browser.",
-    body: <><p>Enclave combines a local workspace with an online account service. Browser processes and environment data remain on this computer.</p><h2>Install</h2><p>Download the installer for Windows or macOS, compare its SHA256 checksum with the value on the download page, and complete installation.</p><h2>Sign in</h2><p>Select <strong>Sign in</strong> in the workspace. Enclave opens the account page in the default browser. Complete authentication and approve the device request.</p><Note>Passwords are entered only on the website. The workspace receives a short-lived authorization code, not the account password.</Note></>,
+    slug: "install", group: "Getting started", title: "Install and sign in", summary: "Get the installer and confirm sign-in in the browser.",
+    body: <><p>Enclave combines a local workspace with an online account service. Browser processes and environment data remain on this computer.</p><h2>Install</h2>{RELEASE ? <p>Download the installer for Windows or macOS, compare its SHA256 checksum with the value on the download page, and complete installation.</p> : <Note>Windows and macOS installers are not available yet. You can <Link href="/account#register">create an account</Link> now. When installers are published, the <Link href="/download">download page</Link> will list the files and SHA256 checksums.</Note>}<h2>Sign in</h2><p>Select <strong>Sign in</strong> in the workspace. Enclave opens the account page in the default browser. Complete authentication and approve the device request.</p><Note>Passwords are entered only on the website. The workspace receives a short-lived authorization code, not the account password.</Note></>,
   },
   {
     slug: "first-environment", group: "Getting started", title: "Create the first environment", summary: "Choose the browser configuration, proxy, region, and engine version, then launch.",

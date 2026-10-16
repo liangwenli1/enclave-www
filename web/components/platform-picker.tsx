@@ -17,6 +17,9 @@ const PLATFORMS: { key: Platform; name: string; req: string; reqEn: string; ext:
 const noop = () => () => {};
 const detect = (): Platform | null => {
   const ua = navigator.userAgent;
+  // 手机的 UA 里带 “like Mac OS X”，必须先排除，否则会标成当前系统并给出 dmg。
+  // iPad 桌面版 UA 和 Mac 无法区分，不在这里猜。
+  if (/iPhone|iPod|iPad|Android/i.test(ua)) return null;
   if (/Windows/i.test(ua)) return "windows";
   if (/Macintosh|Mac OS X/i.test(ua)) return "macos";
   return null;

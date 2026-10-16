@@ -105,6 +105,11 @@ func (s *Store) DropGrants(orgID, deviceID string, slots ...string) error {
 	return q.Delete(&SyncGrant{}).Error
 }
 
+// MarkAllStale 全部槽位都该换钥匙。管理员拿得到团队密钥，他碰得到每一个环境。
+func (s *Store) MarkAllStale(orgID string) error {
+	return s.DB.Model(&SyncSlot{}).Where("org_id = ?", orgID).Update("stale", true).Error
+}
+
 // MarkStale 这些槽位的钥匙该换了。参数为空就什么都不做。
 func (s *Store) MarkStale(orgID string, slots []string) error {
 	if len(slots) == 0 {

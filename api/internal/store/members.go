@@ -24,6 +24,13 @@ const (
 
 func ValidRole(role string) bool { return role == RoleAdmin || role == RoleOperator }
 
+// MemberHeldTeamKey 这个角色的电脑拿得到团队数据密钥。
+// 操作员没有：他只有单独发给他的环境钥匙。管理员和所有者有。
+// 人离开或被降成操作员时，旧的团队密钥还在他电脑上，必须整把换掉。
+func MemberHeldTeamKey(role string) bool {
+	return role == RoleOwner || role == RoleAdmin
+}
+
 // Invite 一张邀请。没有邮件服务，所以这里只生成链接，由邀请人自己发给对方。
 // 主键存的是令牌的哈希：数据库被看到也换不出一次可用的邀请。
 type Invite struct {

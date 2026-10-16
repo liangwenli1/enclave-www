@@ -11,6 +11,7 @@ import { SecurityBand } from "@/components/home/security";
 import { PlanCards } from "@/components/plan-cards";
 import { OfflineNote } from "@/components/plan-action";
 import { getRequestLocale } from "@/lib/i18n/request-locale";
+import { RELEASE } from "@/lib/release";
 
 export async function generateMetadata(): Promise<Metadata> {
   const english = (await getRequestLocale()) === "en";
@@ -41,7 +42,7 @@ const FAQ: [string, string][] = [
   ],
   [
     "支持哪些操作系统？",
-    "Windows 10 / 11 与 macOS（Apple Silicon）。安装包的 SHA256 公布在下载页，安装前可以自行核对。",
+    "Windows 10 / 11 与 macOS（Apple Silicon）。",
   ],
 ];
 
@@ -53,9 +54,19 @@ export default async function Home() {
         ["Where is data stored?", "Environment data, proxies, and login state stay on this computer by default. With encrypted sync enabled, data is encrypted locally before upload, and the server stores ciphertext only."],
         ["What happens when a team member leaves?", "Remove the member from the account page. Their device is revoked immediately and affected environments receive new encryption keys. Revoke active sessions on each platform when existing cookies must be invalidated."],
         ["What are the Free plan limits?", "3 environments, 1 concurrent session, and 1 device. Encrypted sync is not included. Security updates, batch actions, and automation remain available."],
-        ["Which systems are supported?", "Windows 10/11 and macOS on Apple Silicon. SHA256 checksums are published on the download page."],
+        ["Which systems are supported?", "Windows 10/11 and macOS on Apple Silicon."],
       ] as [string, string][])
     : FAQ;
+  const systems = RELEASE
+    ? english
+      ? "SHA256 checksums are published on the download page. Compare them before you install."
+      : "安装包的 SHA256 公布在下载页，安装前可以自行核对。"
+    : english
+      ? "Installers are not available yet. When they are published, the download page will list SHA256 checksums."
+      : "安装包即将开放。开放后，下载页会公布 SHA256，安装前可以自行核对。";
+  const faqWithSystems = faq.map((item, index) =>
+    index === faq.length - 1 ? ([item[0], `${item[1]} ${systems}`] as [string, string]) : item,
+  );
   return (
     <main>
       <Hero />
@@ -121,7 +132,7 @@ export default async function Home() {
             <p className="eyebrow">{english ? "FAQ" : "常见问题"}</p>
             <h2 className="display-3 mt-3">{english ? "Before choosing a plan" : "套餐常见问题"}</h2>
           </div>
-          <Faq items={faq} />
+          <Faq items={faqWithSystems} />
         </div>
       </section>
 

@@ -55,7 +55,9 @@ export async function FingerprintTable() {
       <table className="data-table min-w-[620px]">
         <thead>
           <tr>
-            <th scope="col">{english ? "Item" : "项目"}</th>
+            <th scope="col" className="sticky left-0 z-10 bg-card">
+              {english ? "Item" : "项目"}
+            </th>
             <th scope="col">{english ? "Chromium family" : "Chromium 类"}</th>
             <th scope="col">{english ? "Firefox family" : "Firefox 类"}</th>
           </tr>
@@ -63,7 +65,7 @@ export async function FingerprintTable() {
         <tbody>
           {rows.map(([name, chromium, firefox]) => (
             <tr key={name}>
-              <th scope="row" className="bg-transparent text-[14.5px] font-medium whitespace-normal text-foreground">
+              <th scope="row" className="sticky left-0 z-10 bg-card text-[14.5px] font-medium whitespace-normal text-foreground">
                 {name}
               </th>
               <Td cell={chromium} />

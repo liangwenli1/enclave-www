@@ -11,6 +11,18 @@ import (
 
 // 角色只能被设成管理员或操作员。所有者是注册时定下的，不许经接口改——
 // 否则一个管理员可以把自己提成所有者，连订阅一起接管。
+func TestOnlyTeamKeyHoldersForceAFullRotation(t *testing.T) {
+	if store.MemberHeldTeamKey(store.RoleOperator) {
+		t.Fatal("操作员没有团队密钥，移出他不该换整把团队密钥")
+	}
+	if !store.MemberHeldTeamKey(store.RoleAdmin) || !store.MemberHeldTeamKey(store.RoleOwner) {
+		t.Fatal("管理员和所有者拿得到团队密钥，离开时必须换")
+	}
+	if store.MemberHeldTeamKey("") || store.MemberHeldTeamKey("root") {
+		t.Fatal("不认识的角色不能拿团队密钥，否则轮换时会把新密钥包给它")
+	}
+}
+
 func TestOwnerCannotBeHandedOutThroughTheAPI(t *testing.T) {
 	for _, role := range []string{store.RoleAdmin, store.RoleOperator} {
 		if !store.ValidRole(role) {

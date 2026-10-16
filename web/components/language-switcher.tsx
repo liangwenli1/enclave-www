@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useLocale } from "@/components/locale-provider";
 import { localizePath } from "@/lib/i18n/locale";
 
@@ -9,11 +10,19 @@ export function LanguageSwitcher() {
   const locale = useLocale();
   const pathname = usePathname();
   const search = useSearchParams();
+  const query = search.toString();
+  // 锚点只在点击时的浏览器里有。服务端渲染时不读，避免水合不一致。
+  const [hash, setHash] = useState("");
+  useEffect(() => {
+    const read = () => setHash(window.location.hash);
+    read();
+    window.addEventListener("hashchange", read);
+    return () => window.removeEventListener("hashchange", read);
+  }, [pathname, query]);
 
   const target = (nextLocale: "en" | "zh-cn") => {
-    const query = search.toString();
     const nextPath = localizePath(pathname, nextLocale);
-    return `${nextPath}${query ? `?${query}` : ""}`;
+    return `${nextPath}${query ? `?${query}` : ""}${hash}`;
   };
 
   const remember = (nextLocale: "en" | "zh-cn") => {

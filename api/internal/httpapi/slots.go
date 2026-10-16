@@ -113,6 +113,11 @@ type slotBody struct {
 
 // 建一个槽位，或者给它换一把钥匙。只有拿得到团队密钥的人能做。
 func (s *Server) slotPut(c *gin.Context) {
+	// 团队密钥正在换：别的管理员如果这时用旧密钥重铸槽位，会把新钥匙盖掉。
+	if key, err := s.store.SyncKey(org(c).ID); err == nil && key.NeedsRotation && user(c).Role != store.RoleOwner {
+		fail(c, http.StatusConflict, "TEAM_KEY_ROTATING", "团队密钥正在更换，请等所有者的电脑完成。")
+		return
+	}
 	var in slotBody
 	if err := c.ShouldBindJSON(&in); err != nil || !slotRe.MatchString(in.Slot) ||
 		len(in.KeyID) < 8 || len(in.KeyID) > 64 || !b64Re.MatchString(in.BoxTeam) {

@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { DOCS, GROUPS } from "@/content/docs";
 import { DOCS_EN, GROUPS_EN } from "@/content/docs-en";
 import { getRequestLocale } from "@/lib/i18n/request-locale";
+import { RELEASE } from "@/lib/release";
 
 export async function generateMetadata(): Promise<Metadata> {
   const english = (await getRequestLocale()) === "en";
@@ -26,7 +27,15 @@ export default async function DocsIndex() {
         <span>
           <span className="text-[13px] font-semibold text-primary">{english ? "Start here" : "从这里开始"}</span>
           <span className="mt-1 block text-[19px] font-semibold">{english ? "Install and sign in" : "安装与登录"}</span>
-          <span className="mt-1 block text-[14.5px] text-muted-foreground">{english ? "Install Enclave, verify the download, and authorize the workspace." : "下载安装包、核对 SHA256，并在浏览器中确认登录。"}</span>
+          <span className="mt-1 block text-[14.5px] text-muted-foreground">{
+            RELEASE
+              ? english
+                ? "Download the installer, verify the SHA256 checksum, and authorize the workspace."
+                : "下载安装包、核对 SHA256，并在浏览器中确认登录。"
+              : english
+                ? "Installers are not available yet. Create an account now, then confirm sign-in in the browser after you install."
+                : "安装包尚未开放。可以先注册账号；装好之后在浏览器里确认登录。"
+          }</span>
         </span>
         <ArrowRight className="size-5 shrink-0 text-primary" aria-hidden="true" />
       </Link>

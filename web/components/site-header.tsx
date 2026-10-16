@@ -1,22 +1,24 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { cn } from "cn";
 import { Brand } from "@/components/brand";
 import { LocaleLink as Link } from "@/components/locale-link";
 import { buttonVariants } from "@/components/ui/button";
-import type { Locale } from "@/lib/i18n/locale";
+import { localeFromPath, type Locale } from "@/lib/i18n/locale";
+import { RELEASE } from "@/lib/release";
 import { NAV } from "@/lib/site";
 
-/** 顶栏：左标志，中间导航，右边「登录」是文字，「免费下载」是这一栏唯一的主按钮。 */
+/** 顶栏：左标志，中间导航，右边「登录」是文字。这一栏的按钮用描边，页面正文里再放实心按钮。 */
 const COPY = {
   en: {
     nav: { product: "Product", pricing: "Pricing", docs: "Docs", download: "Download" },
     primaryNav: "Primary navigation",
     signIn: "Sign in",
     download: "Free download",
+    register: "Create account",
     openMenu: "Open menu",
     closeMenu: "Close menu",
   },
@@ -25,6 +27,7 @@ const COPY = {
     primaryNav: "主导航",
     signIn: "登录",
     download: "免费下载",
+    register: "注册账号",
     openMenu: "打开菜单",
     closeMenu: "收起菜单",
   },
@@ -33,8 +36,23 @@ const COPY = {
 export function SiteHeader({ locale }: { locale: Locale }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [hash, setHash] = useState("");
   const copy = COPY[locale];
-  const active = (href: string) => !href.startsWith("/#") && pathname.includes(href);
+  const here = barePath(pathname);
+  const active = (href: string) => {
+    if (href.startsWith("/#")) return here === "/" && hash === href.slice(1);
+    return here === href || here.startsWith(`${href}/`);
+  };
+  const cta = RELEASE
+    ? { href: "/download", label: copy.download }
+    : { href: "/account#register", label: copy.register };
+
+  useEffect(() => {
+    const read = () => setHash(window.location.hash);
+    read();
+    window.addEventListener("hashchange", read);
+    return () => window.removeEventListener("hashchange", read);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/80 bg-background/85 backdrop-blur-md supports-[backdrop-filter]:bg-background/75">
@@ -59,8 +77,8 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           <Link href="/account" className="hidden rounded-full px-3.5 py-1.5 text-[14.5px] text-body hover:text-foreground sm:block">
             {copy.signIn}
           </Link>
-          <Link href="/download" className={cn(buttonVariants({ size: "sm" }), "h-9 px-4 text-[14px]")}>
-            {copy.download}
+          <Link href={cta.href} className={cn(buttonVariants({ size: "sm", variant: "outline" }), "h-9 px-4 text-[14px]")}>
+            {cta.label}
           </Link>
           <button
             type="button"
@@ -81,8 +99,12 @@ export function SiteHeader({ locale }: { locale: Locale }) {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={active(item.href) ? "page" : undefined}
                 onClick={() => setOpen(false)}
-                className="border-b border-border py-3.5 text-[16px] text-foreground last:border-0"
+                className={cn(
+                  "border-b border-border py-3.5 text-[16px] last:border-0",
+                  active(item.href) ? "font-medium text-foreground" : "text-foreground",
+                )}
               >
                 {item.label}
               </Link>
@@ -92,4 +114,10 @@ export function SiteHeader({ locale }: { locale: Locale }) {
       ) : null}
     </header>
   );
+}
+
+function barePath(pathname: string): string {
+  const locale = localeFromPath(pathname);
+  if (!locale) return pathname || "/";
+  return pathname.slice(locale.length + 1) || "/";
 }

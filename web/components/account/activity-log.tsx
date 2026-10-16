@@ -48,19 +48,26 @@ export function ActivityLog() {
   const [more, setMore] = useState<Event[]>([]);
   // 最近一页不满一页，说明已经翻到底了。
   const [exhausted, setExhausted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let alive = true;
     api<View>(path(action)).then(
       (v) => {
         if (!alive) return;
+        setError("");
         setView(v);
-        // 换了筛选：之前「查看更早的」翻出来的那几页作废。
         setMore([]);
         setExhausted(v.events.length < PAGE);
+        setLoading(false);
       },
-      (e: Error) => alive && setError(e.message),
+      (e: Error) => {
+        if (!alive) return;
+        setView(null);
+        setMore([]);
+        setError(e.message);
+        setLoading(false);
+      },
     );
     return () => {
       alive = false;
@@ -76,7 +83,20 @@ export function ActivityLog() {
       title="操作日志"
       note={`谁在什么时候、哪台电脑上打开了哪个环境，以及成员与密钥的变动。保留 ${view?.days ?? 90} 天，不可删除。环境里浏览的内容不记录。`}
       actions={
-        <NativeSelect className="w-[150px]" value={action} onChange={(e) => setAction(e.target.value)} aria-label="按动作筛选">
+        <NativeSelect
+          className="w-[150px]"
+          value={action}
+          aria-label="按动作筛选"
+          onChange={(e) => {
+            const next = e.target.value;
+            if (next === action) return;
+            setAction(next);
+            setError("");
+            setLoading(true);
+            setView(null);
+            setMore([]);
+          }}
+        >
           {FILTERS.map(([v, label]) => (
             <option key={v} value={v}>
               {label}
@@ -86,19 +106,17 @@ export function ActivityLog() {
       }
       flush
     >
-      {error ? (
-        <div className="p-5 sm:p-6">
-          <ErrorText>{error}</ErrorText>
-        </div>
-      ) : !view ? (
+      {loading && !view ? (
         <div className="p-5 sm:p-6">
           <Muted>读取中…</Muted>
         </div>
-      ) : rows.length === 0 ? (
+      ) : null}
+      {view && rows.length === 0 ? (
         <div className="p-5 sm:p-6">
           <Muted>还没有记录。</Muted>
         </div>
-      ) : (
+      ) : null}
+      {view && rows.length > 0 ? (
         <div className="table-scroll">
           <table className="data-table">
             <thead>
@@ -125,7 +143,12 @@ export function ActivityLog() {
             </tbody>
           </table>
         </div>
-      )}
+      ) : null}
+      {error ? (
+        <div className="p-5 sm:p-6">
+          <ErrorText>{error}</ErrorText>
+        </div>
+      ) : null}
       {view && !exhausted && last ? (
         <div className="border-t border-border px-5 py-3 sm:px-6">
           <Button
@@ -134,8 +157,10 @@ export function ActivityLog() {
             disabled={loading}
             onClick={() => {
               setLoading(true);
+              setError("");
               api<View>(path(action, last.at)).then(
                 (v) => {
+                  setError("");
                   setMore((old) => [...old, ...v.events]);
                   setExhausted(v.events.length < PAGE);
                   setLoading(false);

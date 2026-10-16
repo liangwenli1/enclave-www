@@ -223,22 +223,38 @@ func (s *Server) setMemberRole(c *gin.Context) {
 		fail(c, http.StatusBadRequest, "BAD_ROLE", "角色仅支持管理员或操作员。")
 		return
 	}
-	if err := s.store.SetMemberRole(org(c).ID, c.Param("id"), in.Role); err != nil {
+	o, id := org(c), c.Param("id")
+	prev, err := s.store.UserByID(id)
+	if err != nil || prev.OrgID != o.ID {
 		fail(c, http.StatusNotFound, "NOT_FOUND", "该成员不存在，或其为团队所有者。")
 		return
 	}
-	who := c.Param("id")
-	if m, err := s.store.UserByID(who); err == nil {
-		who = m.Email
+	if err := s.store.SetMemberRole(o.ID, id, in.Role); err != nil {
+		fail(c, http.StatusNotFound, "NOT_FOUND", "该成员不存在，或其为团队所有者。")
+		return
 	}
-	s.log(c, evMemberRole, who, "改成"+roleName(in.Role))
+	// 管理员被降成操作员：他电脑上还有团队密钥。旧包装收回，整把钥匙交给所有者去换。
+	if store.MemberHeldTeamKey(prev.Role) && in.Role == store.RoleOperator {
+		devices, _ := s.store.DevicesOfOrg(o.ID)
+		for _, d := range devices {
+			if d.UserID == id {
+				s.store.DeleteEnvelope(o.ID, d.ID)
+				_ = s.store.DropGrants(o.ID, d.ID)
+			}
+		}
+		if err := s.scheduleTeamKeyRotation(o.ID); err != nil {
+			fail(c, http.StatusInternalServerError, "INTERNAL", "标记失败，请稍后再试。")
+			return
+		}
+	}
+	s.log(c, evMemberRole, prev.Email, "改成"+roleName(in.Role))
 	ok(c, nil)
 }
 
 // 移除成员。点这个按钮通常意味着换人，所以可以顺带把他手上的环境转交给接手的人。
 //
-// 三件事一起做：设备解绑（令牌当场作废）、钥匙收回（他的新设备也换不到）、
-// 他碰过的那几个槽位标成"该换钥匙"——换钥匙由所有者的电脑在后台做，只动那几个环境。
+// 设备解绑（令牌当场作废）、钥匙收回（他的新设备也换不到）。
+// 操作员只换他碰过的槽位。管理员拿得到团队密钥，整把交给所有者的电脑换掉。
 // 他电脑上已经解开过的那一份收不回来，界面上照实说。
 func (s *Server) removeMember(c *gin.Context) {
 	var in struct{ TransferTo string }
@@ -252,8 +268,10 @@ func (s *Server) removeMember(c *gin.Context) {
 	hadFolders, _ := s.store.AssignedFolders(o.ID, id)
 	had, _ := s.store.AssignedProfiles(o.ID, id)
 	gone := id
+	heldTeamKey := false
 	if m, err := s.store.UserByID(id); err == nil {
 		gone = m.Email
+		heldTeamKey = store.MemberHeldTeamKey(m.Role)
 	}
 	if in.TransferTo != "" {
 		heir, err := s.store.UserByID(in.TransferTo)
@@ -276,15 +294,6 @@ func (s *Server) removeMember(c *gin.Context) {
 		fail(c, http.StatusNotFound, "NOT_FOUND", "该成员不存在，或其为团队所有者。")
 		return
 	}
-	// 他解得开的那几把钥匙都要换：他分到的环境，外加大家共用的那一把。
-	stale := []string{store.SharedSlot}
-	for _, p := range had {
-		stale = append(stale, store.EnvSlot(p))
-	}
-	if err := s.store.MarkStale(o.ID, stale); err != nil {
-		fail(c, http.StatusInternalServerError, "INTERNAL", "标记失败，请稍后再试。")
-		return
-	}
 	// 他那几台电脑还占着运行名额的，现在就还回来。密钥包装也一起删：新设备再也换不到钥匙。
 	running := s.store.Running(c, o.ID)
 	for _, d := range devices {
@@ -299,7 +308,34 @@ func (s *Server) removeMember(c *gin.Context) {
 		s.store.DeleteEnvelope(o.ID, d.ID)
 		_ = s.store.DropGrants(o.ID, d.ID)
 	}
-	s.log(c, evMemberRemove, gone, itoa(len(hadFolders))+" 个文件夹已转交，"+itoa(len(stale))+" 把钥匙要换")
+	// 操作员没有团队密钥，只换他碰过的槽位。
+	// 管理员拿得到团队密钥：旧密钥还能解开今后每一个槽位，所以整把换，由所有者的电脑做。
+	var stale []string
+	if heldTeamKey {
+		if err := s.scheduleTeamKeyRotation(o.ID); err != nil {
+			fail(c, http.StatusInternalServerError, "INTERNAL", "标记失败，请稍后再试。")
+			return
+		}
+		if all, err := s.store.Slots(o.ID); err == nil {
+			for _, sl := range all {
+				stale = append(stale, sl.Slot)
+			}
+		}
+	} else {
+		stale = []string{store.SharedSlot}
+		for _, p := range had {
+			stale = append(stale, store.EnvSlot(p))
+		}
+		if err := s.store.MarkStale(o.ID, stale); err != nil {
+			fail(c, http.StatusInternalServerError, "INTERNAL", "标记失败，请稍后再试。")
+			return
+		}
+	}
+	detail := itoa(len(hadFolders)) + " 个文件夹已转交，" + itoa(len(stale)) + " 把钥匙要换"
+	if heldTeamKey {
+		detail += "，团队密钥将更换"
+	}
+	s.log(c, evMemberRemove, gone, detail)
 	ok(c, gin.H{"rotating": len(stale), "transferred": len(hadFolders)})
 }
 
@@ -342,6 +378,15 @@ func (s *Server) assignFolders(c *gin.Context) {
 	s.revokeGone(c, id, before, after)
 	s.log(c, evMemberAssign, member.Email, itoa(len(keep))+" 个文件夹")
 	ok(c, gin.H{"folders": keep})
+}
+
+// scheduleTeamKeyRotation 团队密钥该换了，并且每一个槽位都标成待换。
+// 同步还没开启时没有密钥行，这里什么都不发生。
+func (s *Server) scheduleTeamKeyRotation(orgID string) error {
+	if err := s.store.SetNeedsRotation(orgID); err != nil {
+		return err
+	}
+	return s.store.MarkAllStale(orgID)
 }
 
 // revokeGone 他原来看得到、现在看不到的那些环境：收钥匙 + 标记要换一把新的。

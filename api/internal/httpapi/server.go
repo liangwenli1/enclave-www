@@ -106,6 +106,7 @@ func (s *Server) routes(g *gin.RouterGroup) {
 	v1.GET("/sync/pending", s.needManager, s.syncPending)
 	v1.POST("/sync/approve", s.needManager, s.syncApprove)
 	v1.POST("/sync/disable", s.needOwner, s.syncDisable)
+	v1.POST("/sync/rotate", s.needOwner, s.syncRotate)
 	v1.GET("/sync/slots", s.slotList)
 	v1.PUT("/sync/slots", s.needEditor, s.slotPut)
 	v1.DELETE("/sync/slots/:slot", s.needEditor, s.slotDelete)

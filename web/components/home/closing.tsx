@@ -2,6 +2,7 @@ import { LocaleLink as Link } from "@/components/locale-link";
 import { ArrowRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { getRequestLocale } from "@/lib/i18n/request-locale";
+import { RELEASE } from "@/lib/release";
 
 const SCENES = [
   ["跨境店铺", "为每个店铺配置独立环境与目标市场的住宅代理。新环境自动继承文件夹权限。"],
@@ -48,8 +49,8 @@ export async function Closing() {
           <p className="lead mt-4">{english ? "No card required. Upgrade only when more capacity is needed." : "无需绑定付款方式；需要更多容量时再升级。"}</p>
         </div>
         <div className="flex flex-wrap items-center gap-x-7 gap-y-4">
-          <Link href="/download" className={buttonVariants({ size: "lg" })}>
-            {english ? "Free download" : "免费下载"}
+          <Link href={RELEASE ? "/download" : "/account#register"} className={buttonVariants({ size: "lg" })}>
+            {RELEASE ? (english ? "Free download" : "免费下载") : english ? "Create account" : "注册账号"}
           </Link>
           <Link href="/docs" className="inline-flex items-center gap-1.5 font-medium text-link hover:underline hover:underline-offset-4">
             {english ? "Read the docs" : "阅读文档"}

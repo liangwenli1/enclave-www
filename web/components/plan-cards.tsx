@@ -4,6 +4,7 @@ import { PlanAction } from "@/components/plan-action";
 import { buttonVariants } from "@/components/ui/button";
 import { API_LABEL, FEATURED, PLAN_FOR, PLAN_FOR_EN, PLANS, type SitePlan } from "@/lib/plans";
 import { getRequestLocale } from "@/lib/i18n/request-locale";
+import { RELEASE } from "@/lib/release";
 
 /* 四档并排。推荐档只用钴蓝描边、顶线和按钮强调，不反转整张卡片。 */
 
@@ -61,8 +62,11 @@ export async function PlanCards() {
             </p>
             <div className="mt-6">
               {p.plan === "free" ? (
-                <Link href="/download" className={cn(buttonVariants({ variant: "outline" }), "w-full")}>
-                  {english ? "Free download" : "免费下载"}
+                <Link
+                  href={RELEASE ? "/download" : "/account#register"}
+                  className={cn(buttonVariants({ variant: "outline" }), "w-full")}
+                >
+                  {RELEASE ? (english ? "Free download" : "免费下载") : english ? "Create account" : "注册账号"}
                 </Link>
               ) : (
                 <PlanAction plan={p.plan} name={p.name} featured={featured} />

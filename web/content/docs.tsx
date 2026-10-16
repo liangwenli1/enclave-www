@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { LocaleLink as Link } from "@/components/locale-link";
+import { RELEASE } from "@/lib/release";
 
 /*
  * 文档。每一篇写的都是现在的行为（出处：enclave 仓库 docs/enclave-final-delivery.md）；
@@ -23,20 +24,27 @@ export const DOCS: Doc[] = [
     slug: "install",
     group: "开始",
     title: "安装与登录",
-    summary: "下载安装包、核对 SHA256、在浏览器里确认登录。",
+    summary: "获取安装包，并在浏览器里确认登录。",
     body: (
       <>
         <p>Enclave 由两部分组成：本机的工作台（管理环境、启动浏览器），和官网上的账号（额度、设备、团队、订阅）。浏览器始终运行在本机，不经过云端。</p>
         <h2>安装</h2>
-        <ol>
-          <li>
-            在<Link href="/download">下载页</Link>选择 Windows 或 macOS 安装包，下载后核对 SHA256。
-          </li>
-          <li>Windows：双击 .msi 安装。安装包尚未进行代码签名，出现「Windows 已保护你的电脑」时，点「更多信息」→「仍要运行」。</li>
-          <li>
-            macOS：把 Enclave 拖进「应用程序」。安装包尚未经过 Apple 公证，首次打开前在终端执行一次 <code>xattr -cr /Applications/Enclave.app</code>。
-          </li>
-        </ol>
+        {RELEASE ? (
+          <ol>
+            <li>
+              在<Link href="/download">下载页</Link>选择 Windows 或 macOS 安装包，下载后核对 SHA256。
+            </li>
+            <li>Windows：双击 .msi 安装。安装包尚未进行代码签名，出现「Windows 已保护你的电脑」时，点「更多信息」→「仍要运行」。</li>
+            <li>
+              macOS：把 Enclave 拖进「应用程序」。安装包尚未经过 Apple 公证，首次打开前在终端执行一次 <code>xattr -cr /Applications/Enclave.app</code>。
+            </li>
+          </ol>
+        ) : (
+          <Note>
+            Windows 与 macOS 安装包尚未开放下载。可以先<Link href="/account#register">注册账号</Link>。开放后，
+            <Link href="/download">下载页</Link>会提供安装包和 SHA256，并写明安装步骤。
+          </Note>
+        )}
         <h2>登录</h2>
         <ol>
           <li>打开工作台，点「登录」。系统浏览器会打开官网的确认页。</li>

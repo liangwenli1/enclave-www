@@ -129,6 +129,9 @@ curl https://你的域名/api/v1/pubkey
 ## 发布新版客户端后，更新下载页
 
 下载页只列 `web/lib/release.json` 里登记的安装包；没登记时显示「即将开放下载」，不给任何链接。
+同一条件下，顶栏、首页、页尾和免费档不写「免费下载」，改为「注册账号」并指向 `/account#register`。
+`release.json` 登记之后，这些位置才恢复下载。顶栏按钮保持描边，实心按钮留在各页正文里。
+下载页认系统时，iPhone、iPad、Android 先排除，不标成 macOS；iPad 桌面版标识和 Mac 无法区分，不另猜。
 安装包的文件名、SHA256、字节数由 `release.yml` 写进 Release 说明，下载页从那里取，**不手抄哈希**：
 
 ```bash

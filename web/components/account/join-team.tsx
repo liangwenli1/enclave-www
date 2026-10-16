@@ -9,6 +9,7 @@ import { ErrorText, KeyValues, Muted } from "@/components/panel";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api, type Role } from "@/lib/api";
+import { RELEASE } from "@/lib/release";
 
 type Info = { email: string; role: Role; team: string; expiresAt: number };
 
@@ -109,11 +110,20 @@ export function JoinTeam({ code }: { code: string }) {
           <Muted>
             {english ? "On first sign-in, an existing team device must approve the request and verify a six-digit code. This transfers the sync key without exposing it to the server." : "首次登录时，需由团队中已登录的设备批准请求并核对 6 位数字，以便在不向服务器暴露密钥的情况下完成同步授权。"}
           </Muted>
+          {RELEASE ? null : (
+            <p className="text-body">
+              {english
+                ? "The desktop app is not available for download yet. After installers are published, sign in from the account page."
+                : "工作台安装包尚未开放。安装包发布后，在账号页登录即可。"}
+            </p>
+          )}
           <div className="flex flex-wrap gap-3">
-            <Link className={buttonVariants({ size: "lg" })} href="/download">
-              {english ? "Download" : "下载工作台"}
-            </Link>
-            <Link className={buttonVariants({ size: "lg", variant: "outline" })} href="/account">
+            {RELEASE ? (
+              <Link className={buttonVariants({ size: "lg" })} href="/download">
+                {english ? "Download" : "下载工作台"}
+              </Link>
+            ) : null}
+            <Link className={buttonVariants({ size: "lg", variant: RELEASE ? "outline" : "default" })} href="/account">
               {english ? "Open account" : "打开账号页"}
             </Link>
           </div>

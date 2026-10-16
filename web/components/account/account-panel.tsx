@@ -166,6 +166,46 @@ function Account({
     ...(manager ? [["activity", "操作日志"]] : []),
     ...(owner ? [["upgrade", "订阅"]] : []),
   ] as [string, string][];
+  const sectionKey = sections.map(([id]) => id).join(" ");
+  const [current, setCurrent] = useState(sections[0]?.[0] ?? "");
+
+  useEffect(() => {
+    const ids = sectionKey.split(" ").filter(Boolean);
+    const nodes = ids
+      .map((id) => document.getElementById(id))
+      .filter((node): node is HTMLElement => node !== null);
+    if (nodes.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const hit = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (hit?.target.id) setCurrent(hit.target.id);
+      },
+      { rootMargin: "-15% 0px -70% 0px", threshold: 0 },
+    );
+    for (const node of nodes) observer.observe(node);
+    return () => observer.disconnect();
+  }, [sectionKey]);
+
+  const toc = (
+    <ul className="grid gap-0.5 text-[14.5px]">
+      {sections.map(([id, label]) => (
+        <li key={id}>
+          <a
+            href={`#${id}`}
+            aria-current={current === id ? "true" : undefined}
+            className={cn(
+              "-mx-3 block rounded-lg px-3 py-1.5 hover:bg-accent hover:text-foreground",
+              current === id ? "bg-accent font-medium text-foreground" : "text-body",
+            )}
+          >
+            {label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
 
   return (
     <div className="site-wrap py-10 sm:py-14">
@@ -199,17 +239,20 @@ function Account({
       ) : null}
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[180px_1fr] lg:gap-12">
-        <nav aria-label="账号页目录" className="hidden lg:block">
-          <ul className="sticky top-24 grid gap-0.5 text-[14.5px]">
-            {sections.map(([id, label]) => (
-              <li key={id}>
-                <a href={`#${id}`} className="-mx-3 block rounded-lg px-3 py-1.5 text-body hover:bg-accent hover:text-foreground">
-                  {label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <div>
+          <details className="group rounded-xl border border-border lg:hidden">
+            <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-[15px] font-medium [&::-webkit-details-marker]:hidden">
+              账号目录
+              <span className="text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true">
+                ▾
+              </span>
+            </summary>
+            <div className="border-t border-border px-4 py-3">{toc}</div>
+          </details>
+          <nav aria-label="账号页目录" className="sticky top-24 hidden lg:block">
+            {toc}
+          </nav>
+        </div>
 
         <div className="grid min-w-0 gap-6">
           <Panel

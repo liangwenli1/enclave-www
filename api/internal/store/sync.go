@@ -20,8 +20,11 @@ type SyncKey struct {
 	RecoverySalt   string
 	RecoveryParams string
 	RecoveryBox    string
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	// NeedsRotation 有拿得到团队密钥的人离开了（或被降成操作员）。
+	// 旧密钥还能解开今后的包装，所以要换一把。由所有者的电脑做，做完清掉。
+	NeedsRotation bool
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 // SyncEnvelope 给某一台设备的那一份包装。只有那台设备的私钥拆得开。
@@ -36,6 +39,9 @@ type SyncEnvelope struct {
 }
 
 var ErrNoSyncKey = errors.New("sync not enabled")
+
+// ErrRotationLost 另一台所有者的电脑刚换完。这一次不能再换，免得两把新密钥互相覆盖。
+var ErrRotationLost = errors.New("rotation already finished")
 
 func (s *Store) SyncKey(orgID string) (*SyncKey, error) {
 	var k SyncKey
@@ -57,10 +63,11 @@ func (s *Store) EnableSync(orgID string, key SyncKey, self SyncEnvelope) error {
 		if err := tx.Where("org_id = ?", orgID).Delete(&SyncDoc{}).Error; err != nil {
 			return err
 		}
+		key.NeedsRotation = false
 		key.UpdatedAt = time.Now()
 		if err := tx.Clauses(clause.OnConflict{
 			Columns:   []clause.Column{{Name: "org_id"}},
-			DoUpdates: clause.AssignmentColumns([]string{"key_id", "recovery_salt", "recovery_params", "recovery_box", "updated_at"}),
+			DoUpdates: clause.AssignmentColumns([]string{"key_id", "recovery_salt", "recovery_params", "recovery_box", "needs_rotation", "updated_at"}),
 		}).Create(&key).Error; err != nil {
 			return err
 		}
@@ -98,6 +105,67 @@ func (s *Store) SetDeviceKey(deviceID, userID, publicKey string) error {
 	return s.DB.Model(&Device{}).
 		Where("id = ? AND user_id = ?", deviceID, userID).
 		Update("sync_public_key", publicKey).Error
+}
+
+// SetNeedsRotation 标记这把团队密钥该换了。同步还没开时没有这一行，什么都不做。
+func (s *Store) SetNeedsRotation(orgID string) error {
+	return s.DB.Model(&SyncKey{}).Where("org_id = ?", orgID).Update("needs_rotation", true).Error
+}
+
+// RotateTeamKey 换成一把新的团队密钥。
+//
+// 和 EnableSync 的差别：那里会把已经上传的密文全部删掉（旧密钥没人留着，密文也没用了）。
+// 轮换不是重来——环境和登录态还在，所有者的电脑会用新钥匙重传。这里只换包装和槽位，不动密文。
+func (s *Store) RotateTeamKey(orgID string, key SyncKey, envelopes []SyncEnvelope, slots []SyncSlot) error {
+	if _, err := s.SyncKey(orgID); err != nil {
+		return err
+	}
+	return s.DB.Transaction(func(tx *gorm.DB) error {
+		now := time.Now()
+		// 用 map：NeedsRotation 的 false 是零值，按结构体更新会被 GORM 跳过。
+		// 条件里带着 needs_rotation：两台电脑同时来换，只有先到的那次改得了这一行。
+		res := tx.Model(&SyncKey{}).Where("org_id = ? AND needs_rotation = ?", orgID, true).Updates(map[string]any{
+			"key_id":          key.KeyID,
+			"recovery_salt":   key.RecoverySalt,
+			"recovery_params": key.RecoveryParams,
+			"recovery_box":    key.RecoveryBox,
+			"needs_rotation":  false,
+			"updated_at":      now,
+		})
+		if res.Error != nil {
+			return res.Error
+		}
+		if res.RowsAffected == 0 {
+			return ErrRotationLost
+		}
+		if err := tx.Where("org_id = ?", orgID).Delete(&SyncEnvelope{}).Error; err != nil {
+			return err
+		}
+		for i := range envelopes {
+			envelopes[i].OrgID = orgID
+			envelopes[i].KeyID = key.KeyID
+			envelopes[i].CreatedAt = now
+			if err := tx.Create(&envelopes[i]).Error; err != nil {
+				return err
+			}
+		}
+		// 旧的槽位授予对不上新编号，全部作废，等所有者的电脑重新发。
+		if err := tx.Where("org_id = ?", orgID).Delete(&SyncGrant{}).Error; err != nil {
+			return err
+		}
+		for i := range slots {
+			slots[i].OrgID = orgID
+			slots[i].Stale = false
+			slots[i].UpdatedAt = now
+			if err := tx.Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "org_id"}, {Name: "slot"}},
+				DoUpdates: clause.AssignmentColumns([]string{"key_id", "box_team", "stale", "updated_at"}),
+			}).Create(&slots[i]).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 // DisableSync 关掉同步：密钥和全部包装都删掉。云端存的密文从此没人能解开，所以调用方要同时删掉那些密文。

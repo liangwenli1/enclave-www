@@ -53,7 +53,12 @@ func (s *Server) syncStatus(c *gin.Context) {
 	}
 	out["enabled"] = true
 	out["keyId"] = key.KeyID
+	out["needsRotation"] = key.NeedsRotation
 	out["recovery"] = gin.H{"salt": key.RecoverySalt, "params": key.RecoveryParams, "box": key.RecoveryBox}
+	if key.NeedsRotation && user(c).Role == store.RoleOwner {
+		// 只有所有者换这把钥匙。名单里是还能拿团队密钥的电脑，包装由他这台做。
+		out["teamDevices"] = s.teamKeyDevices(o.ID, d.ID)
+	}
 	if e, err := s.store.Envelope(o.ID, d.ID); err == nil && e.KeyID == key.KeyID {
 		out["hasKey"] = true
 		out["envelope"] = gin.H{"ephemeral": e.Ephemeral, "box": e.Box}
@@ -206,6 +211,127 @@ func (s *Server) syncApprove(c *gin.Context) {
 	}
 	s.log(c, evSyncApprove, in.DeviceID, "")
 	ok(c, nil)
+}
+
+// teamKeyDevices 除了自己以外、还能拿团队密钥的电脑。操作员不在里面。
+func (s *Server) teamKeyDevices(orgID, self string) []gin.H {
+	members, _ := s.store.Members(orgID)
+	role := map[string]string{}
+	for _, m := range members {
+		role[m.ID] = m.Role
+	}
+	devices, _ := s.store.DevicesOfOrg(orgID)
+	out := make([]gin.H, 0)
+	for _, d := range devices {
+		if d.ID == self || d.SyncPublicKey == "" || !store.MemberHeldTeamKey(role[d.UserID]) {
+			continue
+		}
+		out = append(out, gin.H{"deviceId": d.ID, "name": d.Name, "publicKey": d.SyncPublicKey})
+	}
+	return out
+}
+
+type rotateBody struct {
+	KeyID                                     string
+	RecoverySalt, RecoveryParams, RecoveryBox string
+	Ephemeral, Box                            string
+	Envelopes                                 []struct{ DeviceID, Ephemeral, Box string }
+	Slots                                     []struct{ Slot, KeyID, BoxTeam string }
+}
+
+// 所有者的电脑换团队密钥：新的恢复码包装、给剩下设备的包装、每个槽位的新钥匙。
+// 不删已经上传的密文。那些密文由这台电脑接着用新钥匙重传。
+func (s *Server) syncRotate(c *gin.Context) {
+	var in rotateBody
+	if err := c.ShouldBindJSON(&in); err != nil {
+		badSync(c, "请求内容不完整。")
+		return
+	}
+	if !s.syncAllowed(c) {
+		fail(c, http.StatusConflict, "PLAN_NO_SYNC", "免费档不含同步功能。升级后，环境与登录态可加密同步至云端。")
+		return
+	}
+	o := org(c)
+	key, err := s.store.SyncKey(o.ID)
+	if err != nil || !key.NeedsRotation {
+		fail(c, http.StatusConflict, "NOTHING_TO_ROTATE", "现在没有要更换的团队密钥。")
+		return
+	}
+	for _, v := range []string{in.RecoverySalt, in.RecoveryBox, in.Ephemeral, in.Box} {
+		if !b64Re.MatchString(v) {
+			badSync(c, "包装的格式不对。")
+			return
+		}
+	}
+	if len(in.KeyID) < 8 || len(in.KeyID) > 64 || len(in.RecoveryParams) > 120 {
+		badSync(c, "密钥编号或派生参数不合法。")
+		return
+	}
+	devices, _ := s.store.DevicesOfOrg(o.ID)
+	members, _ := s.store.Members(o.ID)
+	roleOf := map[string]string{}
+	for _, m := range members {
+		roleOf[m.ID] = m.Role
+	}
+	known := map[string]store.Device{}
+	for _, d := range devices {
+		known[d.ID] = d
+	}
+	self := device(c).ID
+	seen := map[string]bool{}
+	envelopes := make([]store.SyncEnvelope, 0, len(in.Envelopes)+1)
+	envelopes = append(envelopes, store.SyncEnvelope{DeviceID: self, Ephemeral: in.Ephemeral, Box: in.Box})
+	seen[self] = true
+	for _, e := range in.Envelopes {
+		if e.DeviceID == "" || e.DeviceID == self || seen[e.DeviceID] {
+			continue
+		}
+		if !b64Re.MatchString(e.Ephemeral) || !b64Re.MatchString(e.Box) {
+			badSync(c, "包装的格式不对。")
+			return
+		}
+		d, ok := known[e.DeviceID]
+		if !ok || !store.MemberHeldTeamKey(roleOf[d.UserID]) {
+			fail(c, http.StatusNotFound, "NO_DEVICE", "要交给的电脑不在团队里，或者不能拿团队密钥。")
+			return
+		}
+		seen[e.DeviceID] = true
+		envelopes = append(envelopes, store.SyncEnvelope{DeviceID: e.DeviceID, Ephemeral: e.Ephemeral, Box: e.Box})
+	}
+	existing, _ := s.store.Slots(o.ID)
+	covered := map[string]bool{}
+	slots := make([]store.SyncSlot, 0, len(in.Slots))
+	for _, sl := range in.Slots {
+		if !slotRe.MatchString(sl.Slot) || len(sl.KeyID) < 8 || len(sl.KeyID) > 64 || !b64Re.MatchString(sl.BoxTeam) {
+			badSync(c, "槽位、编号或包装不合法。")
+			return
+		}
+		if covered[sl.Slot] {
+			badSync(c, "同一个槽位出现了两次。")
+			return
+		}
+		covered[sl.Slot] = true
+		slots = append(slots, store.SyncSlot{Slot: sl.Slot, KeyID: sl.KeyID, BoxTeam: sl.BoxTeam})
+	}
+	for _, sl := range existing {
+		if !covered[sl.Slot] {
+			badSync(c, "还有槽位没有换钥匙。")
+			return
+		}
+	}
+	err = s.store.RotateTeamKey(o.ID,
+		store.SyncKey{KeyID: in.KeyID, RecoverySalt: in.RecoverySalt, RecoveryParams: in.RecoveryParams, RecoveryBox: in.RecoveryBox},
+		envelopes, slots)
+	if errors.Is(err, store.ErrRotationLost) {
+		fail(c, http.StatusConflict, "NOTHING_TO_ROTATE", "现在没有要更换的团队密钥。")
+		return
+	}
+	if err != nil {
+		fail(c, http.StatusInternalServerError, "INTERNAL", "更换失败，请稍后再试。")
+		return
+	}
+	s.log(c, evSyncRotate, "", "团队密钥已更换")
+	ok(c, gin.H{"keyId": in.KeyID})
 }
 
 // 关掉同步。云端存的密文一起删（没有密钥，它们对谁都只是乱码）。
