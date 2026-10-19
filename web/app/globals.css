@@ -26,16 +26,16 @@
   --popover: #ffffff;
   --popover-foreground: #0b1b33;
 
-  --primary: #1d3cff;
-  --primary-hover: #142bc4;
+  --primary: #236bf9;
+  --primary-hover: #1b57d4;
   --primary-foreground: #ffffff;
   --secondary: #eef2f9;
   --secondary-foreground: #0b1b33;
-  --link: #1d3cff;
+  --link: #236bf9;
 
   --border: #e1e7f0;
   --input: #c9d3e2;
-  --ring: #1d3cff;
+  --ring: #236bf9;
 
   --destructive: #c42b1c;
   --warn: #9a5b00;
@@ -49,8 +49,8 @@
   --navy-muted: #9fb0cc;
 
   /* 文件夹、标签 */
-  --chip: #e8eeff;
-  --chip-foreground: #1a36d9;
+  --chip: #e8f1ff;
+  --chip-foreground: #1857d4;
 
   --radius: 10px;
 }
@@ -132,7 +132,7 @@
     outline-offset: 3px;
   }
   ::selection {
-    background: #d6deff;
+    background: #d6e4ff;
   }
   /* 数字等宽，表格和价格对得齐。 */
   .font-mono,

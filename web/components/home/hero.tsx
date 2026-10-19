@@ -3,7 +3,6 @@ import { ArrowRight } from "lucide-react";
 import { cn } from "cn";
 import { Glyph } from "@/components/brand";
 import { Shot, WindowFrame } from "@/components/frame";
-import { RidgeField } from "@/components/ridge-field";
 import { buttonVariants } from "@/components/ui/button";
 import { getRequestLocale } from "@/lib/i18n/request-locale";
 import { RELEASE } from "@/lib/release";
@@ -61,7 +60,7 @@ function IdentityCard({ id, english }: { id: Identity; english: boolean }) {
   return (
     <div
       className={cn(
-        "rise-in w-[80%] shrink-0 snap-start rounded-xl border border-border bg-card/95 p-4 text-[13px] shadow-float backdrop-blur-sm sm:w-auto lg:w-[292px]",
+        "rise-in w-[80%] shrink-0 snap-start rounded-xl border border-border bg-card/95 p-4 text-[13px] text-foreground shadow-float backdrop-blur-sm sm:w-auto lg:w-[292px]",
         id.className,
       )}
     >
@@ -94,11 +93,15 @@ export async function Hero() {
   const english = (await getRequestLocale()) === "en";
   const identities = english ? IDENTITIES_EN : IDENTITIES;
   return (
-    <section className="relative overflow-hidden pb-24">
-      <RidgeField className="pointer-events-none absolute inset-0 h-full w-full" />
-      <div className="site-wrap relative pt-14 sm:pt-20 lg:pt-24">
-        <h1 className="display-1 max-w-[12em]">{english ? "A separate computer for every account." : "每个账号，一台独立的电脑。"}</h1>
-        <p className="lead mt-6 max-w-[34em]">
+    <section className="relative overflow-hidden bg-black pb-20 text-white sm:pb-24">
+      <div className="site-wrap relative pt-16 sm:pt-20 lg:pt-24">
+        <p className="text-[15px] font-semibold text-white/80 sm:text-[18px]">
+          {english ? "One computer for every account" : "每个账号，一台独立的电脑"}
+        </p>
+        <h1 className="mt-3 max-w-[12em] text-[clamp(40px,6vw,72px)] leading-[1.12] font-semibold tracking-[-0.03em] text-white">
+          {english ? "Isolated browsers for every account." : "多账号环境，分开运行。"}
+        </h1>
+        <p className="mt-6 max-w-[38em] text-[16px] leading-relaxed text-white/60 sm:text-[18px]">
           {english
             ? "Isolate browser fingerprints, cookies, and proxy exits for every account. Share environments with the team without sharing account passwords."
             : "为每个账号隔离浏览器指纹、Cookie 与代理出口，降低跨账号关联风险。团队共享环境，无需共享账号密码。"}
@@ -106,13 +109,13 @@ export async function Hero() {
         <div className="mt-9 flex flex-wrap items-center gap-x-7 gap-y-4">
           <Link href={RELEASE ? "/download" : "/account#register"} className={buttonVariants({ size: "lg" })}>
             {RELEASE ? (english ? "Free download" : "免费下载") : english ? "Create account" : "注册账号"}
-          </Link>
-          <Link href="/pricing" className="inline-flex items-center gap-1.5 font-medium text-link hover:underline hover:underline-offset-4">
-            {english ? "View pricing" : "查看套餐"}
             <ArrowRight className="size-4" />
           </Link>
+          <Link href="/pricing" className="inline-flex items-center gap-1.5 font-medium text-white/75 hover:text-white">
+            {english ? "View pricing" : "查看套餐"}
+          </Link>
         </div>
-        <p className="mt-5 text-[13.5px] text-muted-foreground">
+        <p className="mt-5 text-[13.5px] text-white/45">
           {english
             ? "3 environments free · No card required · Windows 10/11 · macOS (Apple Silicon)"
             : "免费 3 个环境，无需绑卡 · Windows 10 / 11 · macOS（Apple Silicon）"}

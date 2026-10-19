@@ -77,7 +77,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           <Link href="/account" className="hidden rounded-full px-3.5 py-1.5 text-[14.5px] text-body hover:text-foreground sm:block">
             {copy.signIn}
           </Link>
-          <Link href={cta.href} className={cn(buttonVariants({ size: "sm", variant: "outline" }), "h-9 px-4 text-[14px]")}>
+          <Link href={cta.href} className={cn(buttonVariants({ size: "sm" }), "h-9 px-4 text-[14px]")}>
             {cta.label}
           </Link>
           <button
